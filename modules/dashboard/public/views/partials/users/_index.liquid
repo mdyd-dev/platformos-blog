@@ -37,7 +37,7 @@
             <a class='btn btn-link' href="/dashboard/users/edit/{{ user.id }}">Edit</a>
           </td>
           <td>
-            {% include_form 'modules/dashboard/delete_user_form', resource_id: user.id %}
+            {% include_form 'modules/dashboard/delete_user_form', id: user.id %}
           </td>
         </tr>
       {% endfor %}

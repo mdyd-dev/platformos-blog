@@ -3,7 +3,7 @@ name: user_form
 resource: User
 redirect_to: "/log-in"
 flash_notice: "Your account has been successfully created. Please log in."
-configuration:
+fields:
   email:
     validation:
       confirmation: true
@@ -25,7 +25,7 @@ default_payload: ''
 {% parse_json "utils" %}{%- include 'modules/utils/init' -%}{% endparse_json %}
 
 {% form html-novalidate: false, html-class: 'container', html-data-lawyer-signup-form:true %}
-  {% assign f = form_builder.fields %}
+  {% assign f = form.fields %}
 
   {% include utils.input with f.first_name, type: "text" %}
   {% include utils.input with f.last_name, type: "text" %}

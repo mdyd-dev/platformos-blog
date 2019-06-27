@@ -45,7 +45,7 @@ authorization_policies:
           <td>
             <div class="btn-group" role="group" aria-label="Basic example">
               <a href="/dashboard/posts/edit/{{ blog_post.id }}" class='btn btn-link'>Edit</a>
-              {% include_form 'modules/dashboard_blog/blog_post_delete', resource_id: blog_post.id %}
+              {% include_form 'modules/dashboard_blog/blog_post_delete', id: blog_post.id %}
             </div>
           </td>
         </tr>

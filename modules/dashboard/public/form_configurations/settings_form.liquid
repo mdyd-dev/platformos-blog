@@ -4,7 +4,7 @@ resource: Customization
 resource_owner: anyone
 redirect_to: "/dashboard/google_analytics"
 flash_notice: "You've successfully updated project settings"
-configuration:
+fields:
   properties:
     project_name:
       validation: {}
@@ -15,6 +15,6 @@ default_payload: ''
     {% include 'modules/utils/init' %}
   {% endparse_json %}
   {% include utils.form_errors %}
-  {% include utils.input with form_builder.fields.properties.project_name, type: "text" %}
+  {% include utils.input with form.fields.properties.project_name, type: "text" %}
   {% include utils.submit_tag with "Save", class: "btn btn-primary" %}
 {% endform %}

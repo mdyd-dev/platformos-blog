@@ -1,8 +1,8 @@
 ---
-name: Dashboard
+name: dashboard
 properties:
 - name: admin
-  attribute_type: boolean
+  type: boolean
 - name: password_token
-  attribute_type: string
+  type: string
 ---

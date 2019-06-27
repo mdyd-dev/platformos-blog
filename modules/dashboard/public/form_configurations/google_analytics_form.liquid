@@ -4,7 +4,7 @@ resource: modules/dashboard/google_analytics
 resource_owner: anyone
 redirect_to: "/dashboard/google_analytics"
 flash_notice: "You've successfully set Google Analytics"
-configuration:
+fields:
   properties:
     tracking_id:
       validation: {}
@@ -15,6 +15,6 @@ default_payload: ''
     {% include 'modules/utils/init' %}
   {% endparse_json %}
   {% include utils.form_errors %}
-  {% include utils.input with form_builder.fields.properties.tracking_id, type: "text", label: "Tracking ID" %}
+  {% include utils.input with form.fields.properties.tracking_id, type: "text", label: "Tracking ID" %}
   {% include utils.submit_tag with "Save", class: "btn btn-primary" %}
 {% endform %}

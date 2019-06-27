@@ -1,37 +1,37 @@
 name: blog_instance
-custom_attributes:
+properties:
 - name: title
-  attribute_type: string
+  type: string
 - name: subtitle
-  attribute_type: string
+  type: string
 - name: scope
-  attribute_type: string
+  type: string
 - name: slug
-  attribute_type: string
+  type: string
 - name: facebook_app_id
-  attribute_type: string
+  type: string
 - name: facebook_link
-  attribute_type: string
+  type: string
 - name: twitter_link
-  attribute_type: string
+  type: string
 - name: instagram_link
-  attribute_type: string
+  type: string
 - name: linkedin_link
-  attribute_type: string
+  type: string
 - name: enabled
-  attribute_type: boolean
+  type: boolean
 - name: sidebar_enabled
-  attribute_type: boolean
+  type: boolean
 - name: grid_view_enabled
-  attribute_type: boolean
+  type: boolean
 - name: tags_filter
-  attribute_type: array
+  type: array
 - name: header_logo
-  attribute_type: photo
+  type: photo
 - name: header_icon
-  attribute_type: photo
+  type: photo
 - name: header_image
-  attribute_type: photo
+  type: photo
   versions_configuration:
     normal:
       width: 740

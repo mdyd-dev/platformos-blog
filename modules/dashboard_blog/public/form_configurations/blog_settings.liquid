@@ -5,7 +5,7 @@ async_callback_actions:
   content:
 resource: modules/dashboard_blog/blog_instance
 resource_owner: anyone
-configuration:
+fields:
   properties:
     title:
       validation:
@@ -60,7 +60,7 @@ flash_notice: Settings saved
 return_to: /dashboard/blog/settings
 ---
 {% parse_json "utils" %}{%- include 'modules/utils/init' -%}{% endparse_json %}
-{%- assign f = form_builder.fields -%}
+{%- assign f = form.fields -%}
 {%- assign tags_filter = f.properties.tags_filter.value | join: ", " %}
 {% form form, multipart: true, as: customization, html-novalidate: false, html-data-expert-signup-form:true, html-class: 'pt-5 with-borders' %}
   <div class="col-lg-8 col-md-12 col-sm-12 col-12">

@@ -1,6 +1,6 @@
 ---
 name: log_in
-configuration:
+fields:
   email:
     presence: true
   password:
@@ -22,8 +22,8 @@ default_payload: "{}"
 {% form %}
   {% include utils.form_errors %}
   {% include utils.flash_messages %}
-  {% include utils.input with form_builder.fields.email, type: "text" %}
-  {% include utils.input with form_builder.fields.password, type: 'password', error: password_error %}
+  {% include utils.input with form.fields.email, type: "text" %}
+  {% include utils.input with form.fields.password, type: 'password', error: password_error %}
   {% include utils.submit_tag with 'Log In', class: 'btn btn-primary btn-lg', disable_with: 'Logging in...' %}
 
   <p>

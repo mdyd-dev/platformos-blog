@@ -32,7 +32,7 @@ At anytime you can use direct partial path to include predefined component:
 
 ```
   {% include utils.flash_messages %}
-  {% include utils.input with form_builder.fields.email, type: "text" %}
+  {% include utils.input with form.fields.email, type: "text" %}
 ```
 
 

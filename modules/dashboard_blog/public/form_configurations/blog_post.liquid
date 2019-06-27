@@ -7,7 +7,7 @@ resource: modules/dashboard_blog/blog_post
 resource_owner: anyone
 flash_notice: "Post has been successfully updated"
 return_to: /dashboard/blog
-configuration:
+fields:
   properties:
     title:
       validation:
@@ -62,7 +62,7 @@ default_payload: |-
   {% endif %}
 ---
 {% parse_json "utils" %}{%- include 'modules/utils/init' -%}{% endparse_json %}
-{%- assign f = form_builder.fields %}
+{%- assign f = form.fields %}
 {%- query_graph 'modules/dashboard_blog/get_blog_instance', result_name: bi, scope: "blog" -%}
 {%- assign blog = bi.customizations.results.first -%}
 {%- assign available_tags = blog.tags_filter -%}
@@ -87,9 +87,9 @@ default_payload: |-
   %}
 
   <span class="switch switch">
-    {% assign published_at = form_builder.fields.properties.published_at.value | date: '%s' %}
+    {% assign published_at = form.fields.properties.published_at.value | date: '%s' %}
     {% assign now_in_miliseconds = 'now' | date: '%s' %}
-    <input type="checkbox" class="switch" id="switch-normal" {% if now_in_miliseconds > published_at %}checked='checked'{% endif %} name="{{ form_builder.fields.properties.published_at.name }}"  value="{{ 'now' | date: '%Y-%m-%d' }}">
+    <input type="checkbox" class="switch" id="switch-normal" {% if now_in_miliseconds > published_at %}checked='checked'{% endif %} name="{{ form.fields.properties.published_at.name }}"  value="{{ 'now' | date: '%Y-%m-%d' }}">
     <label for="switch-normal">Publish Now</label>
   </span>
 

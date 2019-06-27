@@ -1,6 +1,6 @@
 ---
-name: Default
+name: default
 properties:
 - name: password_token
-  attribute_type: string
+  type: string
 ---

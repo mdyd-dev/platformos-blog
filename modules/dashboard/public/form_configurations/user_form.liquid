@@ -4,7 +4,7 @@ resource: User
 resource_owner: anyone
 redirect_to: "/dashboard/users"
 flash_notice: "You've successfully edited user"
-configuration:
+fields:
   email:
     validation:
       presence: true
@@ -29,7 +29,7 @@ default_payload: ''
     {% include 'modules/utils/init' %}
   {% endparse_json %}
   {%- include utils.form_errors -%}
-  {%- assign f = form_builder.fields -%}
+  {%- assign f = form.fields -%}
 
   {% include utils.input with f.first_name, type: "text" %}
   {% include utils.input with f.last_name, type: "text" %}
