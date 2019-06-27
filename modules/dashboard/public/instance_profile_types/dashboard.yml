@@ -1,8 +1,6 @@
 ---
 name: Dashboard
-admin_approval: false
-create_company_on_sign_up: false
-custom_attributes:
+properties:
 - name: admin
   attribute_type: boolean
 - name: password_token
