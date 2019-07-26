@@ -1,7 +1,6 @@
 ---
 slug: 'blog/rss'
 format: rss
-layout_name: 'layouts/blog/blog'
 ---
 
 {%- capture url_template -%}
@@ -30,6 +29,4 @@ layout_name: 'layouts/blog/blog'
       {%- endfor -%}
     </channel>
   </rss>
-{% else %}
-  Blog is not enabled
 {% endif %}
