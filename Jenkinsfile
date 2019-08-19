@@ -93,11 +93,11 @@ pipeline {
 
   post {
     success {
-      slackSend (channel: "#staging_sanity_check", color: '#00FF00', message: "Golfstix | SUCCESS: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}> - ${buildDuration()}. ${commitInfo()}")
+      slackSend (channel: "#staging_sanity_check", color: '#00FF00', message: "Test | SUCCESS: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}> - ${buildDuration()}. ${commitInfo()}")
     }
 
     failure {
-      slackSend (channel: "#staging_sanity_check", color: '#FF0000', message: "Golfstix | FAILED: <${env.BUILD_URL}|Open build details> - ${buildDuration()}")
+      slackSend (channel: "#staging_sanity_check", color: '#FF0000', message: "Test | FAILED: <${env.BUILD_URL}|Open build details> - ${buildDuration()}")
     }
   }
 }

@@ -7,8 +7,17 @@ export default class BasePage {
   constructor() {
     this.Body = Selector('body');
     this.Content = this.Body.find('main');
-    this.createButton = Selector('.btn.btn-primary')
-    this.file = Selector('#file')
+  }
+
+  async checkLiquidErrors() {
+    const bodyText = await this.Body.textContent;
+    return t
+      .expect(bodyText)
+      .notContains('Liquid Error')
+      .expect(bodyText)
+      .notContains('RenderFormTag Error')
+      .expect(bodyText)
+      .notContains('QueryGraphTag Error');
   }
 
   async openPage(pageName) {

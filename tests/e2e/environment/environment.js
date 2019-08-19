@@ -1,4 +1,10 @@
 export const BASE_URL =
-  process.env.BASE_URL || "https://partners.platform-os.com";
-export const USER_NAME = process.env.USER_NAME_PP
-export const USER_PASS = process.env.USER_PASS_PP
+  process.env.BASE_URL || 'https://blog-module.staging.oregon.platform-os.com';
+export const ADMIN_USER = process.env.ADMIN_USER_GUI || 'admin@example.com';
+export const ADMIN_PASS = process.env.ADMIN_PASS_GUI || 'admin1234';
+export const USERDATA = process.env.DATA_GUI || {
+  NAME: 'test_user',
+  LASTNAME: 'qa',
+  USER_EMAIL: `test+${+new Date ()}@example.com`,
+  PASSWORD: 'password',
+};
