@@ -6,7 +6,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test-ci": "testcafe 'chromium:headless --no-sandbox' --screenshots-on-fails --screenshots=screenshots tests/e2e"
+    "test-ci": "testcafe 'chromium:headless --no-sandbox' --screenshots-on-fails --screenshots=screenshots tests/e2e --skip-js-errors"
   },
   "repository": {
     "type": "git",

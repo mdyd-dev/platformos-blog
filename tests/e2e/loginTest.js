@@ -38,7 +38,7 @@ test('Should error on a invalid password', async t => {
     .eql('Invalid email or password');
 });
 
-test('Should let you log out from Dashboard', async t => {
+test.only('Should let you log in/log out from Dashboard', async t => {
   await loginPage.login(admin_user, admin_pass);
   await basePage.openPage(dashboardPage.urlPath)
   await t
