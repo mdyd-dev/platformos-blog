@@ -73,40 +73,41 @@ pipeline {
     }
 
     stage('Test STG') {
-      agent { docker { image "platformos/testcafe" } }
+      when {
+        expression { return params.MP_URL.isEmpty() }
+        branch 'master'
+      }
 
       environment {
         MP_URL = "${staging_url}"
       }
 
-      when {
-        expression { return params.MP_URL.isEmpty() }
-        anyOf { branch 'master' }
-      }
+      agent { docker { image "platformos/testcafe" } }
 
       steps {
         sh 'npm run test-ci'
       }
       post { failure { archiveArtifacts "screenshots/" } }
     }
+  }
 
   post {
     success {
-      slackSend (channel: "#staging_sanity_check", color: '#00FF00', message: "Blog Module | SUCCESS: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}> - ${buildDuration()}. ${commitInfo()}")
+      slackSend (channel: "#staging_sanity_check", color: '#00FF00', message: "Golfstix | SUCCESS: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}> - ${buildDuration()}. ${commitInfo()}")
     }
 
     failure {
-      slackSend (channel: "#staging_sanity_check", color: '#FF0000', message: "Blog Module | FAILED: <${env.BUILD_URL}|Open build details> - ${buildDuration()}")
+      slackSend (channel: "#staging_sanity_check", color: '#FF0000', message: "Golfstix | FAILED: <${env.BUILD_URL}|Open build details> - ${buildDuration()}")
     }
   }
 }
 
 def commitInfo() {
-  GH_URL = "https://github.com/mdyd-dev/platformos-blog"
+  GITHUB_URL = "https://github.com/mdyd-dev/platformos-blog"
 
-  def commitSha = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
-  // def commitAuthor = sh(returnStdout: true, script: 'git log --no-merges --format="%an" -1').trim()
-  def commitMsg = sh(returnStdout: true, script: 'git log --no-merges --format="%B" -1 ${commitSha}').trim()
+  commitSha = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+  commitAuthor = sh(returnStdout: true, script: 'git log --format="%an" -1').trim()
+  commitMsg = sh(returnStdout: true, script: 'git log --format="%B" -1 ${commitSha}').trim()
 
-  return "<${GH_URL}/commit/${commitSha}|${commitSha} ${commitMsg}>"
+  return "<${GITHUB_URL}/commit/${commitSha}|${commitSha}> - ${commitMsg}"
 }
