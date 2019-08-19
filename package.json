@@ -1,0 +1,21 @@
+{
+  "name": "platformos-blog",
+  "version": "1.0.0",
+  "description": "PlatformOS Blog module will help you kick start simple blog page. Currently project consist of multiple modules that could be used separately or can be easily importeded to other projects. It can be installed on any production or staging instance via Partner Portal [here](https://portal.apps.near-me.com/marketplace/pos_modules/new?id=19).",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test-ci": "testcafe 'chromium:headless --no-sandbox' --screenshots-on-fails --screenshots=screenshots tests/e2e"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lemingos/platformos-blog.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lemingos/platformos-blog/issues"
+  },
+  "homepage": "https://github.com/lemingos/platformos-blog#readme"
+}
