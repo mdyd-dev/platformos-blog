@@ -85,20 +85,18 @@ pipeline {
       }
 
       steps {
-        withCredentials([usernamePassword(credentialsId: 'blog-pp-uat-user', usernameVariable: 'USER_NAME_PP', passwordVariable: 'USER_PASS_PP')]) {
-          sh 'npm run test-ci'
-        }
+        sh 'npm run test-ci'
       }
       post { failure { archiveArtifacts "screenshots/" } }
     }
 
   post {
     success {
-      slackSend (channel: "#staging_sanity_check", color: '#00FF00', message: "Tests | SUCCESS: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}> - ${buildDuration()}. ${commitInfo()}")
+      slackSend (channel: "#staging_sanity_check", color: '#00FF00', message: "Blog Module | SUCCESS: <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}> - ${buildDuration()}. ${commitInfo()}")
     }
 
     failure {
-      slackSend (channel: "#staging_sanity_check", color: '#FF0000', message: "Tests | FAILED: <${env.BUILD_URL}|Open build details> - ${buildDuration()}")
+      slackSend (channel: "#staging_sanity_check", color: '#FF0000', message: "Blog Module | FAILED: <${env.BUILD_URL}|Open build details> - ${buildDuration()}")
     }
   }
 }
