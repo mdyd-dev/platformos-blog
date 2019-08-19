@@ -3,5 +3,5 @@ name: log_out_and_redirect
 redirect_to: '/'
 flash_alert: 'You are now logged out.'
 ---
-{% execute_query 'log_out' %}
+{% graphql g = 'log_out' %}
 false
