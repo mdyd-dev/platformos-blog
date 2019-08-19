@@ -85,10 +85,9 @@ pipeline {
       }
 
       steps {
-        withCredentials([
-          usernamePassword(credentialsId: 'blog-pp-uat-user', usernameVariable: 'USER_NAME_PP', passwordVariable: 'USER_PASS_PP')
-        ]){
-        sh 'npm run test-ci'
+        withCredentials([usernamePassword(credentialsId: 'blog-pp-uat-user', usernameVariable: 'USER_NAME_PP', passwordVariable: 'USER_PASS_PP')]) {
+          sh 'npm run test-ci'
+        }
       }
       post { failure { archiveArtifacts "screenshots/" } }
     }
