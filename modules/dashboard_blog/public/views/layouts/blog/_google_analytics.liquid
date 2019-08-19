@@ -1,4 +1,4 @@
-{% query_graph "modules/dashboard/get_google_analytics", result_name: "ga" %}
+{% graphql ga = "modules/dashboard/get_google_analytics" %}
 {% assign tracking_id = ga.customizations.results.last.tracking_id %}
 {% if tracking_id != blank %}
   <!-- Global site tag (gtag.js) - Google Analytics -->

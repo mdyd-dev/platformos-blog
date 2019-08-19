@@ -4,7 +4,7 @@ layout_name: modules/dashboard/dashboard
 authorization_policies:
 - "modules/dashboard/dashboard_access"
 ---
-{% query_graph "modules/dashboard/get_users", result_name: "users", id: params.slugs %}
+{% graphql users = "modules/dashboard/get_users", id: params.slugs %}
 {% assign user_id = users.users.results.first.id %}
 
 <div class="container pt-4">

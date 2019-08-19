@@ -9,7 +9,7 @@ name: User Signup
 Register Now
 {%- endcontent_for -%}
 
-{% query_graph 'modules/signup/current_user', result_name: u %}
+{% graphql u = 'modules/signup/current_user' %}
 
 <div class="container page__sign-up">
   <div class="row">

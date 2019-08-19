@@ -1,9 +1,9 @@
 {% assign posts_required_size = 3 %}
 
-{%- query_graph 'modules/dashboard_blog/get_blog_posts', result_name: g, published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_instance.id, tags: related_tags, except_ids: except_id -%}
+{%- graphql g = 'modules/dashboard_blog/get_blog_posts', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_instance.id, tags: related_tags, except_ids: except_id -%}
 {% assign related_posts = g.customizations.results %}
 
-{%- query_graph 'modules/dashboard_blog/get_blog_posts', result_name: h, published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_instance.id, except_ids: except_id -%}
+{%- graphql h = 'modules/dashboard_blog/get_blog_posts', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_instance.id, except_ids: except_id -%}
 {% assign other_posts = h.customizations.results %}
 
 {% assign related_posts = related_posts | concat: other_posts | uniq | limit: posts_required_size %}

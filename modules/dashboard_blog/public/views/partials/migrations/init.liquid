@@ -1,4 +1,4 @@
-{% query_graph 'modules/dashboard_blog/get_blog_instance' %}
+{% graphql g = 'modules/dashboard_blog/get_blog_instance' %}
 {% if g.customizations.results == blank %}
   {% parse_json 'blog_instance' %}
     {
@@ -15,10 +15,10 @@
       ]
     }
   {% endparse_json %}
-  {% execute_query 'modules/dashboard_blog/migration_create_customization', data: blog_instance %}
+  {% graphql g = 'modules/dashboard_blog/migration_create_customization', data: blog_instance %}
 
   {% assign image_url = 'modules/dashboard_blog/images/hero.jpg' | asset_url %}
-  {% execute_query 'modules/dashboard_blog/create_image', result_name: "in", image_type: "header_image", owner_id: g.customization_create.id, raw_url: image_url %}
+  {% graphql g_image = 'modules/dashboard_blog/create_image', image_type: "header_image", owner_id: g.customization_create.id, raw_url: image_url %}
 
   {% parse_json 'blog_post' %}
   {
@@ -36,12 +36,12 @@
     ]
   }
   {% endparse_json %}
-  {% execute_query 'modules/dashboard_blog/migration_create_customization', data: blog_post %}
+  {% graphql g = 'modules/dashboard_blog/migration_create_customization', data: blog_post %}
 
   {% assign image_url = 'modules/dashboard_blog/images/first_post_image.jpg' | asset_url %}
   {% log image_url, type: "Image Url" %}
-  {% execute_query 'modules/dashboard_blog/create_image', result_name: "i", image_type: "hero_image", owner_id: g.customization_create.id, raw_url: image_url %}
+  {% graphql i = 'modules/dashboard_blog/create_image', image_type: "hero_image", owner_id: g.customization_create.id, raw_url: image_url %}
 
   {% assign image_url = 'modules/dashboard_blog/images/thumb_pOS.jpg' | asset_url %}
-  {% execute_query 'modules/dashboard_blog/create_image', result_name: "i", image_type: "author_avatar", owner_id: g.customization_create.id, raw_url: image_url %}
+  {% graphql i = 'modules/dashboard_blog/create_image', image_type: "author_avatar", owner_id: g.customization_create.id, raw_url: image_url %}
 {% endif %}

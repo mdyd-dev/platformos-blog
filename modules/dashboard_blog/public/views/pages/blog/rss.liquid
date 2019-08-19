@@ -8,11 +8,11 @@ format: rss
 {%- endcapture -%}
 {% assign url_params = context.location.href | extract_url_params: url_template %}
 
-{%- query_graph 'modules/dashboard_blog/get_blog_instance', result_name: "bi" -%}
+{%- graphql bi = 'modules/dashboard_blog/get_blog_instance' -%}
 {% assign blog_instance = bi.customizations.results.first %}
 {% if blog_instance %}
   {%- assign today = 'now' | date: '%F' -%}
-  {%- query_graph 'modules/dashboard_blog/get_blog_posts', result_name: g, published_at_lte: today, blog_instance_id: blog_instance.id, tags: params.tags -%}
+  {%- graphql g = 'modules/dashboard_blog/get_blog_posts', published_at_lte: today, blog_instance_id: blog_instance.id, tags: params.tags -%}
   <?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0">
     <channel>

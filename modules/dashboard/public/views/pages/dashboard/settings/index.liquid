@@ -4,7 +4,7 @@ layout_name: modules/dashboard/dashboard
 authorization_policies:
 - "modules/dashboard/dashboard_access"
 ---
-{% query_graph "modules/dashboard/get_settings", result_name: "s" %}
+{% graphql s = "modules/dashboard/get_settings" %}
 {% assign settings_id = s.customizations.results.last.id %}
 <div class="pt-4">
   <div class="col-lg-6 col-md-8 col-sm-12 col-12">

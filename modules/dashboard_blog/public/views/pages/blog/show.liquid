@@ -11,14 +11,14 @@ layout_name: 'modules/dashboard_blog/blog'
 
 {% assign url_params = context.location.href | extract_url_params: url_template %}
 
-{%- query_graph 'modules/dashboard_blog/get_blog_instance', result_name: bi, scope: 'blog', slug: url_params.blog_slug, enabled: 'true' -%}
+{%- graphql bi = 'modules/dashboard_blog/get_blog_instance', scope: 'blog', slug: url_params.blog_slug, enabled: 'true' -%}
 {% assign blog_instance = bi.customizations.results.first %}
 
 {% if url_params.blog_slug != blank and url_params.post_slug != blank and blog_instance %}
 
   {% assign blog_url = '/blog/' | append: url_params.blog_slug %}
   {% assign today = 'now' | date: '%F' %}
-  {%- query_graph 'modules/dashboard_blog/get_blog_posts', result_name: g, published_at_lte: today, blog_instance_id: blog_instance.id, slug: url_params.post_slug  -%}
+  {%- graphql g = 'modules/dashboard_blog/get_blog_posts', published_at_lte: today, blog_instance_id: blog_instance.id, slug: url_params.post_slug  -%}
   {% assign blog_post = g.customizations.results.first %}
 
   {%- if blog_post -%}

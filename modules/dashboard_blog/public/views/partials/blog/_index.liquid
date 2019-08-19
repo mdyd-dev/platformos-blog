@@ -11,7 +11,7 @@
   {% assign feature_post_first = true %}
 {% endif %}
 
-{%- query_graph 'modules/dashboard_blog/get_blog_instance', result_name: bi, scope: 'blog', enabled: 'true' -%}
+{%- graphql bi = 'modules/dashboard_blog/get_blog_instance', scope: 'blog', enabled: 'true' -%}
 {% assign blog_instance = bi.customizations.results.first %}
 {% assign grid_view_cols_nr = 2 %}
 
@@ -27,7 +27,7 @@
   -%}
 
   {% assign today = 'now' | date: '%F' %}
-  {%- query_graph 'modules/dashboard_blog/get_blog_posts', result_name: g, published_at_lte: today, per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags -%}
+  {%- graphql g = 'modules/dashboard_blog/get_blog_posts', published_at_lte: today, per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags -%}
   {% assign blog_posts = g.customizations %}
 
   <div class="o-section">

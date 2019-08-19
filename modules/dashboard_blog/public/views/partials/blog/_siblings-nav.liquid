@@ -1,6 +1,6 @@
 <div class="c-siblings-nav o-component">
 
-  {%- query_graph 'modules/dashboard_blog/get_blog_posts', result_name: prev_post_query, published_at_lt: blog_post.published_at, blog_instance_id: blog_post.blog_instance_id %}
+  {%- graphql prev_post_query = 'modules/dashboard_blog/get_blog_posts', published_at_lt: blog_post.published_at, blog_instance_id: blog_post.blog_instance_id %}
   {% assign previous_post = prev_post_query.customizations.results.first %}
 
   {% if previous_post %}
@@ -15,7 +15,7 @@
     </a>
   {% endif %}
 
-  {%- query_graph 'modules/dashboard_blog/get_blog_posts', result_name: next_post_query, published_at_gt: blog_post.published_at, published_at_lte: today, blog_instance_id: blog_post.blog_instance_id -%}
+  {%- graphql next_post_query = 'modules/dashboard_blog/get_blog_posts', published_at_gt: blog_post.published_at, published_at_lte: today, blog_instance_id: blog_post.blog_instance_id -%}
   {% assign next_post = next_post_query.customizations.results.last %}
 
   {%- if next_post -%}

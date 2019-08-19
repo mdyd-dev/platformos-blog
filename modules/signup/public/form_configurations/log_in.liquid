@@ -7,7 +7,7 @@ fields:
     presence: true
 resource: Session
 authorization_policies: ""
-return_to: '{% query_graph "modules/signup/get_user_with_email", email: form.email %}{% if g.people.results.first.dashboard %}/dashboard{% else %} / {% endif %}'
+return_to: '{% graphql g = "modules/signup/get_user_with_email", email: form.email %}{% if g.people.results.first.dashboard %}/dashboard{% else %} / {% endif %}'
 default_payload: "{}"
 ---
 {% parse_json "utils" %}

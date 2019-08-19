@@ -9,7 +9,7 @@ name: Edit Profile
 Edit Profile
 {% endcontent_for %}
 
-{% query_graph "current_user", result_name: u %}
+{% graphql u = "current_user" %}
 
 <div class="container page__sign-up">
   <div class="row">

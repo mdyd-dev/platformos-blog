@@ -6,7 +6,7 @@ authorization_policies:
   - 'modules/dashboard_blog/instance_blog_edition'
   - 'modules/dashboard/dashboard_access'
 ---
-{%- query_graph 'modules/dashboard_blog/get_blog_instance', result_name: bi -%}
+{%- graphql bi = 'modules/dashboard_blog/get_blog_instance' %}
 {% assign blog = bi.customizations.results.first %}
 
 {%- include 'modules/dashboard_blog/blog/admin/navigation' -%}

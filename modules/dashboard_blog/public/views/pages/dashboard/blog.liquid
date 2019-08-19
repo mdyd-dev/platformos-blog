@@ -20,10 +20,10 @@ authorization_policies:
 {% assign url_params = context.location.href | extract_url_params: url_template %}
 
 {%- include _utils.flash_messages -%}
-{%- query_graph 'modules/dashboard_blog/get_blog_instance', result_name: bi, scope: 'blog' -%}
+{%- graphql bi = 'modules/dashboard_blog/get_blog_instance', scope: 'blog' -%}
 {% assign blog_instance = bi.customizations.results.first %}
 
-{%- query_graph 'modules/dashboard_blog/get_blog_posts', result_name: g, blog_instance_id: blog_instance.id, tags: params.tags, page: pagination_page, per_page: pagination_per_page -%}
+{%- graphql g = 'modules/dashboard_blog/get_blog_posts', blog_instance_id: blog_instance.id, tags: params.tags, page: pagination_page, per_page: pagination_per_page -%}
 {% assign blog_posts = g.customizations %}
 
 <a class="btn btn-info float-right" href="/">Back to Blog</a>
