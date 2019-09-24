@@ -12,11 +12,6 @@ properties:
   type: datetime
 - name: hero_image
   type: photo
-  html_tag: input
-  input_html_options: {}
-  search_in_query: false
-  searchable: false
-  versions_configuration: {}
 - name: tags
   type: array
 - name: blog_instance_id
