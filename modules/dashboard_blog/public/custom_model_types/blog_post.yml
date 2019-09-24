@@ -11,7 +11,6 @@ properties:
 - name: published_at
   type: datetime
 - name: hero_image
-  label: Hero Image
   type: photo
   html_tag: input
   input_html_options: {}
