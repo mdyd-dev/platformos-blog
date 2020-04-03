@@ -1,10 +1,10 @@
 # Introduction
 
-platformOS Blog module will help you kick start simple blog page. Currently project consist of multiple modules that could be used separately or can be easily importeded to other projects. It can be installed on any production or staging instance via Partner Portal [here](https://partners.platformos.com/marketplace/pos_modules/19).
+pOS Blog, the platformOS blog module will help you kickstart a simple blog page. Currently, the project consists of multiple modules that can be used separately or can be easily imported to other projects. It can be installed on any production or staging instance via the Partner Portal [here](https://partners.platformos.com/marketplace/pos_modules/19).
 
 # Roadmap
 
-Project is still in progress, some of the features/tasks that are priority are listed below:
+This project is still in progress, some of the features/tasks that are a priority are listed below:
 
 * webpack integration
 * payment integration
