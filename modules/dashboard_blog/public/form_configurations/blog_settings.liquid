@@ -72,12 +72,12 @@ return_to: /dashboard/blog/settings
       <span class="float-right switch switch">
         {% if f.properties.enabled.value != false %}
           {%- assign enabled = "1" -%}
-        {% endif %} 
+        {% endif %}
         {%- include utils.checkbox_field with f.properties.enabled, input_class: "switch normal", value: enabled -%}
         {%- include utils.label_tag with f.properties.enabled, label: "Blog Enabled" -%}
       </span>
     </div>
-    
+
     {%- include utils.input with f.properties.title, type: "text" -%}
     {%- include utils.input with f.properties.subtitle, type: "text" -%}
     {%- include utils.input with f.properties.sidebar_enabled, type: "checkbox" -%}

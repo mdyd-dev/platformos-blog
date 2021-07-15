@@ -1,4 +1,6 @@
+
 *.swp
 .marketplace-kit
+.pos
 tmp
 .DS_Store

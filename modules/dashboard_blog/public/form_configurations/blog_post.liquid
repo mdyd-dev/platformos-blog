@@ -65,9 +65,11 @@ default_payload: |-
 {%- assign f = form.fields %}
 {%- graphql bi = 'modules/dashboard_blog/get_blog_instance', scope: "blog" -%}
 {%- assign blog = bi.customizations.results.first -%}
-{%- assign available_tags = blog.tags_filter -%}
+{%- assign available_tags = blog.tags_filter | join: ', ' | split: ', ' -%}
 
+{% comment %} This is used in different files... {% endcomment %}
 {%- assign tags = f.properties.tags.value | join: ', ' -%}
+
 {%- assign date_format_short_label = 'mm/dd/yyyy' -%}
 {%- capture date_hint -%}Format: {{ date_format_short_label }}{%- endcapture -%}
 

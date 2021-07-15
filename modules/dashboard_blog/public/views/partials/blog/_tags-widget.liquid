@@ -5,13 +5,13 @@
   {% endif %}
 
   <ul class="c-tags-list">
-
+    {% assign tags = tags | join: ", " | split: ", " %}
     {%- for tag in tags -%}
       <li class="c-tags-list__item">
 
         <a class="c-tags-list__link" href="/blog/category/{{ tag | parameterize }}">
           {{ tag }}
-        </a>
+        </a>{% unless forloop.last %}&#183;{% endunless %}
 
       </li>
     {%- endfor -%}
