@@ -1,1 +1,2 @@
-{% include 'modules/dashboard_blog/migrations/init' %}
+{% background init_id = 'modules/dashboard_blog/migrations/init', max_attempts: 10, delay: 0.1 %}
+{% log init_id, type: "Init blog id" %}

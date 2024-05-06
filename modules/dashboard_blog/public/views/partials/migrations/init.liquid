@@ -44,4 +44,5 @@
 
   {% assign image_url = 'modules/dashboard_blog/images/thumb_pOS.jpg' | asset_url %}
   {% graphql i = 'modules/dashboard_blog/create_image', image_type: "author_avatar", owner_id: g.customization_create.id, raw_url: image_url %}
+  {% log "Finished init" %}
 {% endif %}
