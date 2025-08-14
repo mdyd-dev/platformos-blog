@@ -1,5 +1,5 @@
 ---
-slug: 'dashboard/posts/edit'
+slug: 'dashboard/posts/edit/:id'
 format: html
 layout_name: 'modules/dashboard/dashboard'
 authorization_policies:
@@ -8,4 +8,4 @@ authorization_policies:
 ---
 {%- include 'modules/dashboard_blog/blog/admin/navigation' -%}
 
-{% include_form 'modules/dashboard_blog/blog_post', id: params.slugs %}
+{% include_form 'modules/dashboard_blog/blog_post', id: context.params.id %}
