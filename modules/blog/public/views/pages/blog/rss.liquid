@@ -1,0 +1,32 @@
+---
+slug: 'blog/rss'
+format: rss
+---
+
+{%- capture url_template -%}
+{% if params.language %}/{lang}{%- endif -%}/blog/rss.rss
+{%- endcapture -%}
+{% assign url_params = context.location.href | extract_url_params: url_template %}
+
+{%- graphql bi = 'modules/blog/get_blog_instance' -%}
+{% assign blog_instance = bi.customizations.results.first %}
+{% if blog_instance %}
+  {%- assign today = 'now' | date: '%F' -%}
+  {%- graphql g = 'modules/blog/get_blog_posts', published_at_lte: today, blog_instance_id: blog_instance.id, tags: params.tags -%}
+  <?xml version="1.0" encoding="UTF-8"?>
+  <rss version="2.0">
+    <channel>
+      <title>{{ blog_instance.title }}</title>
+      <link>https://desksnear.me/blog</link>
+      {%- for blog_post in g.customizations.results -%}
+        <item>
+          <title>{{ blog_post.title }}</title>
+          <description>{{ blog_post.excerpt }}</description>
+          <pubDate>{{ blog_post.published_at  | localize: 'long' }}</pubDate>
+          <link>https://desksnear.me/blog/post/{{ blog_post.slug }}</link>
+          <guid>https://desksnear.me/blog/post/{{ blog_post.slug }}</guid>
+        </item>
+      {%- endfor -%}
+    </channel>
+  </rss>
+{% endif %}

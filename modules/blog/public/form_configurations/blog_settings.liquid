@@ -1,0 +1,95 @@
+---
+name: blog_settings
+async_callback_actions:
+  delay:
+  content:
+resource: modules/blog/blog_instance
+resource_owner: anyone
+fields:
+  properties:
+    title:
+      validation:
+        presence: true
+    subtitle:
+      validation:
+        presence: false
+    slug:
+      validation:
+        presence: true
+    scope:
+      validation:
+        presence: true
+    enabled:
+      validation:
+        presence: false
+    sidebar_enabled:
+      validation:
+        presence: false
+    grid_view_enabled:
+      validation:
+        presence: false
+    tags_filter:
+      validation:
+        presence: false
+    facebook_app_id:
+      validation:
+        presence: false
+    facebook_link:
+      validation:
+        presence: false
+    twitter_link:
+      validation:
+        presence: false
+    instagram_link:
+      validation:
+        presence: false
+    linkedin_link:
+      validation:
+        presence: false
+    facebook_link:
+      validation:
+        presence: false
+  custom_images:
+    header_image:
+      image:
+        validation: {
+          file_content_type: { allow: ['image/jpeg', 'image/png', 'image/gif'] }
+        }
+default_payload: ''
+flash_notice: Settings saved
+return_to: /dashboard/blog/settings
+---
+{% parse_json "utils" %}{%- include 'modules/utils/init' -%}{% endparse_json %}
+{%- assign f = form.fields -%}
+{%- assign tags_filter = f.properties.tags_filter.value | join: ", " %}
+{% form form, multipart: true, as: customization, html-novalidate: false, html-data-expert-signup-form:true, html-class: 'pt-5 with-borders' %}
+  <div class="col-lg-8 col-md-12 col-sm-12 col-12">
+    {%- include utils.flash_messages -%}
+    {%- include utils.hidden_field with f.properties.scope, value: scope, -%}
+    {%- include utils.hidden_field with f.properties.slug, value: "blog", -%}
+
+    <div class="form-group pb-3">
+      <span class="float-right switch switch">
+        {% if f.properties.enabled.value != false %}
+          {%- assign enabled = "1" -%}
+        {% endif %}
+        {%- include utils.checkbox_field with f.properties.enabled, input_class: "switch normal", value: enabled -%}
+        {%- include utils.label_tag with f.properties.enabled, label: "Blog Enabled" -%}
+      </span>
+    </div>
+
+    {%- include utils.input with f.properties.title, type: "text" -%}
+    {%- include utils.input with f.properties.subtitle, type: "text" -%}
+    {%- include utils.input with f.properties.sidebar_enabled, type: "checkbox" -%}
+    {%- include utils.input with f.properties.grid_view_enabled, type: "checkbox" -%}
+    {%- include utils.input with f.properties.tags_filter, type: "text", value: tags_filter -%}
+    {%- include utils.input with f.properties.facebook_app_id, type: "text" -%}
+    {%- include utils.input with f.custom_images.header_image.image, type: "image" -%}
+    {%- include utils.input with f.properties.facebook_link, type: "text" -%}
+    {%- include utils.input with f.properties.twitter_link, type: "text" -%}
+    {%- include utils.input with f.properties.linkedin_link, type: "text" -%}
+    {%- include utils.input with f.properties.instagram_link, type: "text" -%}
+
+    {% include utils.submit_tag with "Save", class: 'btn btn-primary btn-lg', disable_with: 'Saving...' %}
+  </div>
+{% endform %}

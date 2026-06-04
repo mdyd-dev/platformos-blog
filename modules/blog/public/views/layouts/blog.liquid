@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {%- include 'modules/blog/layouts/blog/csrf' %}
+  {%- include 'modules/blog/layouts/blog/meta-tags' %}
+  {%- include 'modules/blog/layouts/blog/prefetch' %}
+  {%- include 'modules/blog/layouts/blog/favicon' %}
+  {%- include 'modules/blog/layouts/blog/stylesheets' -%}
+  {%- include 'modules/blog/layouts/blog/preload' -%}
+  {%- include 'modules/blog/layouts/blog/page-title' -%}
+  {%- include 'modules/blog/layouts/blog/page-description' -%}
+  {%- include 'modules/blog/layouts/blog/google_analytics' -%}
+
+  {% yield 'head_content' %}
+</head>
+
+<body class="{% if is_logged_in %}logged-in{% endif %}">
+  {% include 'modules/blog/layout/header' %}
+  {% include 'modules/blog/layouts/blog/fb' %}
+  {% include 'modules/blog/layouts/blog/icons' %}
+  {% include 'modules/utils/flash_messages' %}
+
+  <main class="">
+    {{ content_for_layout }}
+    {%- include "modules/blog/layout/footer" -%}
+  </main>
+
+  {%- include 'modules/blog/layouts/blog/javascripts' -%}
+</body>
+</html>

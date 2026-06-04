@@ -1,0 +1,34 @@
+name: blog_post
+properties:
+  - name: title
+    type: string
+  - name: content
+    type: text
+  - name: excerpt
+    type: text
+  - name: slug
+    type: string
+  - name: published_at
+    type: datetime
+  - name: tags
+    type: array
+  - name: blog_instance_id
+    type: string
+  - name: author_name
+    type: string
+  - name: author_biography
+    type: text
+  - name: hero_image
+    type: upload
+    options:
+      acl: public
+  - name: author_avatar
+    type: upload
+    options:
+      acl: public
+      versions:
+        - name: thumb
+          resize:
+            width: 100
+            height: 100
+            fit: cover

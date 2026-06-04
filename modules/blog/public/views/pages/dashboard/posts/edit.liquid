@@ -1,0 +1,11 @@
+---
+slug: 'dashboard/posts/edit/:id'
+format: html
+layout_name: 'modules/dashboard/dashboard'
+authorization_policies:
+  - 'modules/blog/instance_blog_edition'
+  - 'modules/dashboard/dashboard_access'
+---
+{%- include 'modules/blog/blog/admin/navigation' -%}
+
+{% include_form 'modules/blog/blog_post', id: context.params.id %}

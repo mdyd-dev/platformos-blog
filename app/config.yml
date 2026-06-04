@@ -1,0 +1,14 @@
+---
+# Allow the deploy to manage (and delete) files for the modules maintained in this repo
+# and the modules they depend on. Without this, removed files linger on the instance.
+modules_that_allow_delete_on_deploy:
+  - blog
+  - dashboard
+  - signup
+  - utils
+  - core
+  - user
+  - common-styling
+  - tests
+sync_assets: true
+sync_translations: true

@@ -1,0 +1,111 @@
+{%- capture url_template -%}
+{% if params.language %}/{lang}{%- endif -%}/<%= &blog_path =%>blog{/category}{/tags}{?page,per_page}
+{%- endcapture -%}
+
+{% assign url_params = context.location.href | extract_url_params: url_template %}
+{% assign slug = url_params.slug[1] | default: 'blog' %}
+{% assign tags = url_params.tags | replace: '-', ' ' | default: null %}
+{% assign pagination_page = context.params.page | default: 1 | plus: 0 %}
+{% assign per_page = context.params.per_page  | default: 10 | plus: 0 %}
+{% if pagination_page == 1 %}
+  {% assign feature_post_first = true %}
+{% endif %}
+
+{%- graphql bi = 'modules/blog/get_blog_instance', scope: 'blog', enabled: 'true' -%}
+{% assign blog_instance = bi.customizations.results.first %}
+{% assign grid_view_cols_nr = 2 %}
+
+{% if slug != blank and blog_instance %}
+  {%- content_for 'meta_title' -%}
+    {{ slug | capitalize }}
+  {%- endcontent_for -%}
+
+  {%- include 'modules/blog/blog/hero',
+    title: blog_instance.title,
+    subtitle: blog_instance.subtitle,
+    img_path: blog_instance.header_image.transformed
+  -%}
+
+  {% assign today = 'now' | date: '%F' %}
+  {%- graphql g = 'modules/blog/get_blog_posts', published_at_lte: today, per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags -%}
+  {% assign blog_posts = g.customizations %}
+
+  <div class="o-section">
+
+    <div class="o-container">
+
+      <div class="c-layout">
+
+        <section class="c-layout__main">
+
+          {% if tags %}
+            <div class="o-section__title">Category: <b>{{ tags | join: ',' }}</b></div>
+          {% endif %}
+
+          {% if blog_posts.results.size == 0 %}
+            <div class="o-section__title">
+              Sorry, no content matched your criteria.<br>
+              <a href="{{ context.location.href }}">Please go back to main blog page</a>
+            </div>
+          {% endif %}
+
+          {%- include 'modules/blog/blog/posts-list',
+            is_grid_view: blog_instance.grid_view_enabled,
+            grid_view_cols: grid_view_cols_nr,
+            feature_first: feature_post_first,
+            posts: blog_posts.results,
+            instance_slug: blog_instance.slug
+          -%}
+
+          {%- include 'modules/blog/blog/pagination',
+            max_full_pagination: 6,
+            max_side_pagination: 2,
+            posts_per_page: per_page,
+            posts: blog_posts
+          -%}
+
+        </section>
+
+        {%- if blog_instance.sidebar_enabled -%}
+          <aside class="c-layout__sidebar">
+
+            {% assign rss_link = '/blog/rss.rss' %}
+            {% include 'modules/blog/blog/social-list',
+              widget_title: 'Be in touch',
+              facebook_link: blog_instance.facebook_link,
+              twitter_link: blog_instance.twitter_link,
+              instagram_link: blog_instance.instagram_link,
+              linkedin_link: blog_instance.linkedin_link,
+              rss_link: rss_link
+            %}
+
+            {%- include 'modules/blog/blog/tags-widget',
+              widget_title: 'Categories',
+              tags: blog_instance.tags_filter
+            -%}
+
+            {%-
+              include 'modules/blog/blog/facebook-widget',
+              facebook_link: blog_instance.facebook_link
+            %}
+
+          </aside>
+        {%- endif -%}
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {% assign user_id = blog_instance.user.id | plus: 0 %}
+  {%- if current_user.id == user_id -%}
+    {%- include 'modules/blog/blog/flying-button',
+      btn_text: 'Setting',
+      btn_href: '/dashboard/blog/settings',
+      btn_icon: 'equalizer2'
+    -%}
+  {%- endif -%}
+{% else %}
+  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled' -%}
+{% endif %}

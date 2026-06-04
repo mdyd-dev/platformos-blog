@@ -1,0 +1,32 @@
+{% assign posts_required_size = 3 %}
+
+{%- graphql g = 'modules/blog/get_blog_posts', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_instance.id, tags: related_tags, except_ids: except_id -%}
+{% assign related_posts = g.customizations.results %}
+
+{%- graphql h = 'modules/blog/get_blog_posts', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_instance.id, except_ids: except_id -%}
+{% assign other_posts = h.customizations.results %}
+
+{% assign related_posts = related_posts | concat: other_posts | uniq | limit: posts_required_size %}
+
+
+{% if related_posts.size > 0  %}
+  <section class="o-section o-section--fill-grey">
+
+    <div class="o-container">
+
+      {% if section_title %}
+        <div class="o-section__title">{{ section_title }}</div>
+      {% endif %}
+
+      {%- include 'modules/blog/blog/posts-list',
+        is_grid_view: true,
+        grid_view_cols: 3,
+        feature_first: false,
+        posts: related_posts,
+        instance_slug: blog_instance.slug
+      -%}
+
+    </div>
+
+  </section>
+{% endif %}

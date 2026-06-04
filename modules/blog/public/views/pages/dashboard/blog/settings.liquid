@@ -1,0 +1,22 @@
+---
+slug: 'dashboard/blog/settings'
+format: html
+layout_name: 'modules/dashboard/dashboard'
+authorization_policies:
+  - 'modules/blog/instance_blog_edition'
+  - 'modules/dashboard/dashboard_access'
+---
+{%- graphql bi = 'modules/blog/get_blog_instance' %}
+{% assign blog = bi.customizations.results.first %}
+
+{%- include 'modules/blog/blog/admin/navigation' -%}
+
+<section class="o-section">
+  <div class="o-container">
+    {% include_form "modules/blog/blog_settings",
+      resoruce: "modules/blog/blog_instance",
+      id: blog.id,
+      scope: 'blog'
+    %}
+  </div>
+</section>

@@ -1,0 +1,114 @@
+---
+name: blog_post
+async_callback_actions:
+  delay:
+  content:
+resource: modules/blog/blog_post
+resource_owner: anyone
+flash_notice: "Post has been successfully updated"
+return_to: /dashboard/blog
+fields:
+  properties:
+    title:
+      validation:
+        presence: true
+    content:
+      validation:
+        presence: true
+    slug:
+      validation:
+        presence: true
+    excerpt:
+      validation:
+        presence: true
+    published_at:
+      validation:
+        presence: false
+    tags:
+      validation:
+        presence: false
+    blog_instance_id:
+      validation:
+        presence: true
+    author_name:
+      validation:
+        presence: true
+    author_biography:
+      validation:
+        presence: false
+  custom_images:
+    hero_image:
+      image:
+        validation:
+          file_content_type:
+            allow: ['image/jpeg', 'image/png', 'image/gif']
+            message: "Uploaded file should be in jpg/png/gif format"
+    author_avatar:
+      image:
+        validation: {
+          file_content_type: { allow: ['image/jpeg', 'image/png', 'image/gif'] }
+        }
+default_payload: |-
+  {% if form %}
+    {%- graphql bi = 'modules/blog/get_blog_instance', scope: 'blog' -%}
+    {%- assign blog_instance = bi.customizations.results.first -%}
+    {
+      "properties_attributes": {
+        "blog_instance_id": "{{ blog_instance.id }}",
+        "slug": "{{ params.properties_attributes.title | default: '' | slugify }}",
+        "tags": "{{ params.properties_attributes.tags | join: ', '}}"
+      }
+    }
+  {% endif %}
+---
+{% parse_json "utils" %}{%- include 'modules/utils/init' -%}{% endparse_json %}
+{%- assign f = form.fields %}
+{%- graphql bi = 'modules/blog/get_blog_instance', scope: "blog" -%}
+{%- assign blog = bi.customizations.results.first -%}
+{%- assign available_tags = blog.tags_filter | join: ', ' | split: ', ' -%}
+
+{% comment %} This is used in different files... {% endcomment %}
+{%- assign tags = f.properties.tags.value | join: ', ' -%}
+
+{%- assign date_format_short_label = 'mm/dd/yyyy' -%}
+{%- capture date_hint -%}Format: {{ date_format_short_label }}{%- endcapture -%}
+
+{% form html-class: 'pt-5 with-borders' %}
+  <div class="col-lg-8 col-md-12 col-sm-12 col-12">
+  {% if params.page_id != blank %}
+    <input type="hidden" name="page_id" value="{{ params.page_id }}">
+  {% endif %}
+
+  {%- include utils.flash_messages -%}
+
+  {%- include utils.input with f.properties.title, type: "text" -%}
+  {%- include utils.input with f.properties.published_at,
+    type: "date",
+    placeholder: date_format_short_label,
+    label: "Publish At"
+  %}
+
+  <span class="switch switch">
+    {% assign published_at = form.fields.properties.published_at.value | date: '%s' %}
+    {% assign now_in_miliseconds = 'now' | date: '%s' %}
+    <input type="checkbox" class="switch" id="switch-normal" {% if now_in_miliseconds > published_at %}checked='checked'{% endif %} name="{{ form.fields.properties.published_at.name }}"  value="{{ 'now' | date: '%Y-%m-%d' }}">
+    <label for="switch-normal">Publish Now</label>
+  </span>
+
+  {%- include utils.input with f.custom_images.hero_image.image, type: "image",
+    label: "Hero Image",
+    error: f.custom_images.hero_image.image.validation.errors.first
+  -%}
+  {%- include utils.input with f.properties.content, type: "textarea", input_data_attrs: 'data-wysiwyg="content"' -%}
+  {%- include utils.input with f.properties.excerpt, rows: 5, type: "textarea" -%}
+  {%- include utils.input with f.custom_images.author_avatar.image, type: "image", label: "Author Avatar"-%}
+  {%- include utils.input with f.properties.author_name, type: "text" -%}
+  {%- include utils.input with f.properties.author_biography, type: "text" -%}
+
+  {%- include utils.input with f.properties.tags, type: "select",
+     placeholder: "Tags separated with comma",
+     collection: available_tags
+  -%}
+  {% include utils.submit_tag, class: 'btn btn-primary btn-lg', disable_with: 'saving...' %}
+</div>
+{% endform %}
