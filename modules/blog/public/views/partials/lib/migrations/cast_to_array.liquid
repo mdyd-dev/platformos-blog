@@ -1,0 +1,30 @@
+{% comment %}
+  Casts a legacy property value to an array. Legacy rows stored tag lists as a
+  single comma-separated string ("platformOS, Getting Started"); rows read
+  through the new schema may already return a real array.
+
+  Arguments:
+    value - string (comma separated), array, or nil
+
+  Returns: array of trimmed strings, or nil when value is blank
+{% endcomment %}
+{% liquid
+  assign result = nil
+  if value != blank
+    assign value_json = value | json
+    assign first_char = value_json | slice: 0, 1
+    if first_char == '['
+      assign result = value
+    else
+      assign result = '[]' | parse_json
+      assign parts = value | split: ','
+      for part in parts
+        assign trimmed = part | strip
+        if trimmed != ''
+          assign result = result | array_add: trimmed
+        endif
+      endfor
+    endif
+  endif
+%}
+{% return result %}

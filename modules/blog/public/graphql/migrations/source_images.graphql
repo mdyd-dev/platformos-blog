@@ -1,0 +1,27 @@
+# Legacy custom_image attachments are only exposed by the (deprecated)
+# customizations query; the records API cannot see them. Used solely by the
+# legacy data migration to move attachment URLs into upload properties.
+query source_images($name: String!, $page: Int = 1) {
+  customizations(name: $name, per_page: 100, page: $page, is_deleted: false) {
+    total_entries
+    total_pages
+    results {
+      id
+      hero_image: custom_image(name: "hero_image") {
+        url
+      }
+      author_avatar: custom_image(name: "author_avatar") {
+        url
+      }
+      header_image: custom_image(name: "header_image") {
+        url
+      }
+      header_logo: custom_image(name: "header_logo") {
+        url
+      }
+      header_icon: custom_image(name: "header_icon") {
+        url
+      }
+    }
+  }
+}

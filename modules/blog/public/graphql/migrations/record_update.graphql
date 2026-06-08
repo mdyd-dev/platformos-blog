@@ -1,0 +1,5 @@
+mutation record_update($id: ID!, $table: String!, $properties: [PropertyInputType!]!) {
+  record: record_update(id: $id, record: { table: $table, properties: $properties }) {
+    id
+  }
+}

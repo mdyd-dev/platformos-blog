@@ -1,27 +1,36 @@
 ---
-slug: 'blog/post'
+slug: 'blog/post/:blog_slug/:post_slug'
 format: html
 layout_name: 'modules/blog/blog'
 ---
-{% assign url = "https://" | append: context.location.host | append: context.location.href %}
+{% liquid
+  assign url = 'https://' | append: context.location.host | append: context.location.href
+  assign blog_slug = context.params.blog_slug
+  assign post_slug = context.params.post_slug
+  function blog_instance = 'modules/blog/lib/queries/blog_instances/find', scope: 'blog', slug: blog_slug, enabled: true
+%}
 
-{%- capture url_template -%}
-{% if params.language %}/{lang}{%- endif -%}/blog/post/{blog_slug}/{post_slug}
-{%- endcapture -%}
+{% if blog_slug != blank and post_slug != blank and blog_instance %}
 
-{% assign url_params = context.location.href | extract_url_params: url_template %}
-
-{%- graphql bi = 'modules/blog/get_blog_instance', scope: 'blog', slug: url_params.blog_slug, enabled: 'true' -%}
-{% assign blog_instance = bi.customizations.results.first %}
-
-{% if url_params.blog_slug != blank and url_params.post_slug != blank and blog_instance %}
-
-  {% assign blog_url = '/blog/' | append: url_params.blog_slug %}
-  {% assign today = 'now' | date: '%F' %}
-  {%- graphql g = 'modules/blog/get_blog_posts', published_at_lte: today, blog_instance_id: blog_instance.id, slug: url_params.post_slug  -%}
-  {% assign blog_post = g.customizations.results.first %}
+  {% liquid
+    assign blog_url = '/blog/' | append: blog_slug
+    assign today = 'now' | date: '%F'
+    function posts = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, blog_instance_id: blog_instance.id, slug: post_slug
+    assign blog_post = posts.results.first
+  %}
 
   {%- if blog_post -%}
+    {% liquid
+      function prev_collection = 'modules/blog/lib/queries/blog_posts/search', published_at_lt: blog_post.published_at, blog_instance_id: blog_post.blog_instance_id
+      assign previous_post = prev_collection.results.first
+      function next_collection = 'modules/blog/lib/queries/blog_posts/search', published_at_gt: blog_post.published_at, published_at_lte: today, blog_instance_id: blog_post.blog_instance_id
+      assign next_post = next_collection.results.last
+      assign posts_required_size = 3
+      function related_collection = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_post.blog_instance_id, tags: blog_post.tags, except_ids: blog_post.id
+      function other_collection = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_post.blog_instance_id, except_ids: blog_post.id
+      assign related_posts = related_collection.results | concat: other_collection.results | uniq | limit: posts_required_size
+    %}
+
     {% content_for 'meta_title' %}
       {{ blog_post.title }}
     {% endcontent_for %}
@@ -31,7 +40,7 @@ layout_name: 'modules/blog/blog'
       |
       {{ blog_post.published_at | localize: 'long' }}
     {%- endcapture -%}
-    {% assign image_url = blog_post.hero_image.original | remove: "thumb_" %}
+    {% assign image_url = blog_post.hero_image.url %}
     {%- include 'modules/blog/blog/hero-post',
       title: blog_post.title,
       subtitle: post_meta,
@@ -47,7 +56,7 @@ layout_name: 'modules/blog/blog'
           <article class="c-article o-component">
 
             <div class="c-article__content">
-              {{ blog_post.content  }}
+              {{ blog_post.content | markdown }}
             </div>
 
             <footer class="c-article__footer">
@@ -67,13 +76,18 @@ layout_name: 'modules/blog/blog'
 
           </article>
 
+          {% assign author_avatar_path = blog_post.author_avatar.versions.thumb | default: blog_post.author_avatar.url %}
           {%- include 'modules/blog/blog/user',
-            img_path: blog_post.author_avatar.thumb,
+            img_path: author_avatar_path,
             name: blog_post.author_name,
             description: blog_post.author_biography
           -%}
 
-          {%- include 'modules/blog/blog/siblings-nav' -%}
+          {%- include 'modules/blog/blog/siblings-nav',
+            previous_post: previous_post,
+            next_post: next_post,
+            blog_instance: blog_instance
+          -%}
 
           {%- include 'modules/blog/blog/comments',
             page_url: url
@@ -87,8 +101,8 @@ layout_name: 'modules/blog/blog'
 
     {%- include 'modules/blog/blog/posts-section',
       section_title: 'Related Articles',
-      related_tags: blog_post.tags,
-      except_id: blog_post.id
+      related_posts: related_posts,
+      blog_instance: blog_instance
     -%}
 
     {% assign user_id = blog_instance.user.id | plus: 0 %}

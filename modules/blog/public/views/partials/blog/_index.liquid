@@ -1,18 +1,15 @@
-{%- capture url_template -%}
-{% if params.language %}/{lang}{%- endif -%}/<%= &blog_path =%>blog{/category}{/tags}{?page,per_page}
-{%- endcapture -%}
+{% comment %}
+  Presentation partial for the blog index / category listing.
 
-{% assign url_params = context.location.href | extract_url_params: url_template %}
-{% assign slug = url_params.slug[1] | default: 'blog' %}
-{% assign tags = url_params.tags | replace: '-', ' ' | default: null %}
-{% assign pagination_page = context.params.page | default: 1 | plus: 0 %}
-{% assign per_page = context.params.per_page  | default: 10 | plus: 0 %}
-{% if pagination_page == 1 %}
-  {% assign feature_post_first = true %}
-{% endif %}
-
-{%- graphql bi = 'modules/blog/get_blog_instance', scope: 'blog', enabled: 'true' -%}
-{% assign blog_instance = bi.customizations.results.first %}
+  Data is fetched by the owning page (pages/blog/index.liquid,
+  pages/blog/category.liquid) and passed in as locals:
+    blog_instance       - the blog_instance record (or nil)
+    blog_posts          - the posts records collection (results, pagination)
+    slug                - blog slug (for the meta title)
+    tags                - active category tags (string), or nil
+    per_page            - posts per page
+    feature_post_first  - whether to feature the first post
+{% endcomment %}
 {% assign grid_view_cols_nr = 2 %}
 
 {% if slug != blank and blog_instance %}
@@ -20,15 +17,12 @@
     {{ slug | capitalize }}
   {%- endcontent_for -%}
 
+  {% assign header_image_path = blog_instance.header_image.versions.normal | default: blog_instance.header_image.url %}
   {%- include 'modules/blog/blog/hero',
     title: blog_instance.title,
     subtitle: blog_instance.subtitle,
-    img_path: blog_instance.header_image.transformed
+    img_path: header_image_path
   -%}
-
-  {% assign today = 'now' | date: '%F' %}
-  {%- graphql g = 'modules/blog/get_blog_posts', published_at_lte: today, per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags -%}
-  {% assign blog_posts = g.customizations %}
 
   <div class="o-section">
 

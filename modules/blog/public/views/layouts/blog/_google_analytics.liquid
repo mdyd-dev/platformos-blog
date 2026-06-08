@@ -1,5 +1,8 @@
-{% graphql ga = "modules/dashboard/get_google_analytics" %}
-{% assign tracking_id = ga.customizations.results.last.tracking_id %}
+{% comment %}
+  Presentation partial: Google Analytics snippet. The `tracking_id` local is
+  fetched by the layout (layouts/blog.liquid) and passed in. (GA is removed
+  entirely in task 1.8.)
+{% endcomment %}
 {% if tracking_id != blank %}
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-131113778-1"></script>

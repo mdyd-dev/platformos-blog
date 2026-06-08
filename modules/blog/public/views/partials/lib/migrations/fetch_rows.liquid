@@ -1,0 +1,26 @@
+{% comment %}
+  Fetches all (non-deleted) rows of a table via the records API, paginating
+  100 at a time. Used by the legacy data migration.
+
+  Arguments:
+    table - table name, e.g. 'modules/dashboard_blog/blog_post'
+
+  Returns: array of { id, properties } hashes
+{% endcomment %}
+{% liquid
+  assign rows = '[]' | parse_json
+  assign current_page = 1
+  assign total_pages = 1
+  for i in (1..100)
+    if current_page > total_pages
+      break
+    endif
+    graphql g = 'modules/blog/migrations/source_records', table: table, page: current_page
+    assign total_pages = g.records.total_pages
+    for row in g.records.results
+      assign rows = rows | array_add: row
+    endfor
+    assign current_page = current_page | plus: 1
+  endfor
+%}
+{% return rows %}

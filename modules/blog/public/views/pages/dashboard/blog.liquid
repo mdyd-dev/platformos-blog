@@ -20,11 +20,9 @@ authorization_policies:
 {% assign url_params = context.location.href | extract_url_params: url_template %}
 
 {%- include _utils.flash_messages -%}
-{%- graphql bi = 'modules/blog/get_blog_instance', scope: 'blog' -%}
-{% assign blog_instance = bi.customizations.results.first %}
+{%- function blog_instance = 'modules/blog/lib/queries/blog_instances/find', scope: 'blog' -%}
 
-{%- graphql g = 'modules/blog/get_blog_posts', blog_instance_id: blog_instance.id, tags: params.tags, page: pagination_page, per_page: pagination_per_page -%}
-{% assign blog_posts = g.customizations %}
+{%- function blog_posts = 'modules/blog/lib/queries/blog_posts/search', blog_instance_id: blog_instance.id, tags: params.tags, page: pagination_page, per_page: pagination_per_page -%}
 
 <a class="btn btn-info float-right" href="/">Back to Blog</a>
 {%- include 'modules/blog/blog/admin/navigation' -%}

@@ -1,3 +1,8 @@
+{%- liquid
+  graphql dashboard_current_user = 'modules/dashboard/dashboard_current_user'
+  graphql ga = 'modules/dashboard/get_google_analytics'
+  assign ga_tracking_id = ga.customizations.results.last.tracking_id
+-%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,13 +14,13 @@
   {%- include 'modules/blog/layouts/blog/preload' -%}
   {%- include 'modules/blog/layouts/blog/page-title' -%}
   {%- include 'modules/blog/layouts/blog/page-description' -%}
-  {%- include 'modules/blog/layouts/blog/google_analytics' -%}
+  {%- include 'modules/blog/layouts/blog/google_analytics', tracking_id: ga_tracking_id -%}
 
   {% yield 'head_content' %}
 </head>
 
 <body class="{% if is_logged_in %}logged-in{% endif %}">
-  {% include 'modules/blog/layout/header' %}
+  {% include 'modules/blog/layout/header', dashboard_current_user: dashboard_current_user %}
   {% include 'modules/blog/layouts/blog/fb' %}
   {% include 'modules/blog/layouts/blog/icons' %}
   {% include 'modules/utils/flash_messages' %}

@@ -1,0 +1,70 @@
+query search(
+  $per_page: Int = 20
+  $page: Int = 1
+  $title: String
+  $id: ID
+  $slug: String
+  $published_at_lte: String
+  $published_at_lt: String
+  $published_at_gt: String
+  $published_at_gte: String
+  $tags: [String!]
+  $blog_instance_id: String
+  $except_ids: [ID!]
+) {
+  customizations: records(
+    per_page: $per_page
+    page: $page
+    sort: { properties: [{ name: "published_at", order: DESC }] }
+    filter: {
+      table: { value: "modules/blog/blog_post" }
+      id: { value: $id, not_value_in: $except_ids }
+      properties: [
+        { name: "tags", array_overlaps: $tags }
+        { name: "blog_instance_id", value: $blog_instance_id }
+        { name: "title", value: $title }
+        { name: "slug", value: $slug }
+        {
+          name: "published_at"
+          range: {
+            lte: $published_at_lte
+            lt: $published_at_lt
+            gt: $published_at_gt
+            gte: $published_at_gte
+          }
+        }
+      ]
+    }
+  ) {
+    current_page
+    per_page
+    total_entries
+    total_pages
+    has_next_page
+    has_previous_page
+    results {
+      id
+      user {
+        id
+      }
+      created_at
+      author_name: property(name: "author_name")
+      blog_instance_id: property(name: "blog_instance_id")
+      author_biography: property(name: "author_biography")
+      content: property(name: "content")
+      excerpt: property(name: "excerpt")
+      published_at: property(name: "published_at")
+      title: property(name: "title")
+      slug: property(name: "slug")
+      tags: property_array(name: "tags")
+      hero_image: property_upload(name: "hero_image") {
+        url
+        versions
+      }
+      author_avatar: property_upload(name: "author_avatar") {
+        url
+        versions
+      }
+    }
+  }
+}

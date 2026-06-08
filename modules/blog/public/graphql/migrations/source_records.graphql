@@ -1,0 +1,10 @@
+query source_records($table: String!, $page: Int = 1) {
+  records(per_page: 100, page: $page, filter: { table: { value: $table } }) {
+    total_entries
+    total_pages
+    results {
+      id
+      properties
+    }
+  }
+}

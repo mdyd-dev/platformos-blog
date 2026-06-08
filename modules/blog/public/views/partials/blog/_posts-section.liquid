@@ -1,15 +1,12 @@
-{% assign posts_required_size = 3 %}
+{% comment %}
+  Presentation partial: a "Related Articles" section of post cards.
 
-{%- graphql g = 'modules/blog/get_blog_posts', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_instance.id, tags: related_tags, except_ids: except_id -%}
-{% assign related_posts = g.customizations.results %}
-
-{%- graphql h = 'modules/blog/get_blog_posts', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_instance.id, except_ids: except_id -%}
-{% assign other_posts = h.customizations.results %}
-
-{% assign related_posts = related_posts | concat: other_posts | uniq | limit: posts_required_size %}
-
-
-{% if related_posts.size > 0  %}
+  Data is fetched by the owning page (pages/blog/show.liquid) and passed in:
+    related_posts  - array of blog_post records to display
+    blog_instance  - the blog_instance record (for building post URLs)
+    section_title  - optional heading
+{% endcomment %}
+{% if related_posts.size > 0 %}
   <section class="o-section o-section--fill-grey">
 
     <div class="o-container">

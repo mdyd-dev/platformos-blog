@@ -6,19 +6,21 @@ format: rss
 {%- capture url_template -%}
 {% if params.language %}/{lang}{%- endif -%}/blog/rss.rss
 {%- endcapture -%}
-{% assign url_params = context.location.href | extract_url_params: url_template %}
-
-{%- graphql bi = 'modules/blog/get_blog_instance' -%}
-{% assign blog_instance = bi.customizations.results.first %}
+{% liquid
+  assign url_params = context.location.href | extract_url_params: url_template
+  function blog_instance = 'modules/blog/lib/queries/blog_instances/find'
+%}
 {% if blog_instance %}
-  {%- assign today = 'now' | date: '%F' -%}
-  {%- graphql g = 'modules/blog/get_blog_posts', published_at_lte: today, blog_instance_id: blog_instance.id, tags: params.tags -%}
+  {% liquid
+    assign today = 'now' | date: '%F'
+    function blog_posts = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, blog_instance_id: blog_instance.id, tags: params.tags
+  %}
   <?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0">
     <channel>
       <title>{{ blog_instance.title }}</title>
       <link>https://desksnear.me/blog</link>
-      {%- for blog_post in g.customizations.results -%}
+      {%- for blog_post in blog_posts.results -%}
         <item>
           <title>{{ blog_post.title }}</title>
           <description>{{ blog_post.excerpt }}</description>

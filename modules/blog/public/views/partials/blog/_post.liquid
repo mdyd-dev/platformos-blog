@@ -2,9 +2,9 @@
 
 <article class="c-post{% if is_featured %} c-post--feature{% endif -%}">
 
-  {%- if post_item.hero_image.transformed -%}
+  {%- if post_item.hero_image.url -%}
     <a class="c-post__picture-cont" href="{{ post_href }}">
-      <div class="c-post__picture u-lazy-load" data-src="{{ post_item.hero_image.transformed }}" data-lazy-load>
+      <div class="c-post__picture u-lazy-load" data-src="{{ post_item.hero_image.url }}" data-lazy-load>
       </div>
     </a>
   {%- endif -%}
@@ -46,7 +46,7 @@
       {%- if post_item.excerpt -%}
         {{ post_item.excerpt }}
       {%- else -%}
-        {{ post_item.content | truncate: 200, '...' }}
+        {{ post_item.content | markdown | html_to_text | truncate: 200, '...' }}
       {%- endif -%}
     </div>
 

@@ -1,0 +1,23 @@
+{% comment %}
+  Converts legacy HTML post content to markdown — but only when the content
+  still looks like legacy Trumbowyg HTML (starts with a tag and contains known
+  HTML tags). Already-converted markdown is returned untouched, which keeps
+  migration re-runs stable.
+
+  Arguments:
+    content - post content string (HTML or markdown), may be nil
+
+  Returns: markdown string (or the original value when no conversion applies)
+{% endcomment %}
+{% liquid
+  assign result = content
+  if content != blank
+    assign trimmed = content | strip
+    assign first_char = trimmed | slice: 0, 1
+    assign looks_html = content | matches: '<(p|h[1-6]|ul|ol|li|br|div|span|strong|em|b|i|a|img)[\s>/]'
+    if first_char == '<' and looks_html
+      function result = 'modules/blog/lib/migrations/html_to_markdown', html: content
+    endif
+  endif
+%}
+{% return result %}

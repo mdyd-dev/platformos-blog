@@ -1,0 +1,25 @@
+{% comment %}
+  Builds a single PropertyInputType hash that sets an upload property from a
+  remote image URL. platformOS fetches the URL and generates the schema's
+  configured versions (verified against pos-module-community's
+  create_from_remote pattern: value_upload { type: image, acl: public,
+  remote_url }).
+
+  Arguments:
+    name - upload property name (e.g. 'hero_image')
+    url  - remote image URL
+
+  Returns: PropertyInputType hash, or nil when url is blank
+{% endcomment %}
+{% liquid
+  assign result = nil
+  if url != blank
+    assign upload_value = '{}' | parse_json
+    assign upload_value = upload_value | hash_add_key: 'type', 'image'
+    assign upload_value = upload_value | hash_add_key: 'acl', 'public'
+    assign upload_value = upload_value | hash_add_key: 'remote_url', url
+    assign result = '{}' | parse_json | hash_add_key: 'name', name
+    assign result = result | hash_add_key: 'value_upload', upload_value
+  endif
+%}
+{% return result %}

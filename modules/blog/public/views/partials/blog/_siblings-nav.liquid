@@ -1,7 +1,12 @@
-<div class="c-siblings-nav o-component">
+{% comment %}
+  Presentation partial: previous/next post navigation.
 
-  {%- graphql prev_post_query = 'modules/blog/get_blog_posts', published_at_lt: blog_post.published_at, blog_instance_id: blog_post.blog_instance_id %}
-  {% assign previous_post = prev_post_query.customizations.results.first %}
+  Data is fetched by the owning page (pages/blog/show.liquid) and passed in:
+    previous_post  - the previous blog_post record (or nil)
+    next_post      - the next blog_post record (or nil)
+    blog_instance  - the blog_instance record (for building post URLs)
+{% endcomment %}
+<div class="c-siblings-nav o-component">
 
   {% if previous_post %}
     <a class="c-siblings-nav__link c-siblings-nav__link--prev" href="/blog/post/{{ blog_instance.slug }}/{{ previous_post.slug }}">
@@ -14,9 +19,6 @@
 
     </a>
   {% endif %}
-
-  {%- graphql next_post_query = 'modules/blog/get_blog_posts', published_at_gt: blog_post.published_at, published_at_lte: today, blog_instance_id: blog_post.blog_instance_id -%}
-  {% assign next_post = next_post_query.customizations.results.last %}
 
   {%- if next_post -%}
     <a class="c-siblings-nav__link c-siblings-nav__link--next" href="/blog/post/{{ blog_instance.slug }}/{{ next_post.slug }}">

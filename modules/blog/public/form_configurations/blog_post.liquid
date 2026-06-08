@@ -50,7 +50,7 @@ fields:
         }
 default_payload: |-
   {% if form %}
-    {%- graphql bi = 'modules/blog/get_blog_instance', scope: 'blog' -%}
+    {%- graphql bi = 'modules/blog/blog_instances/find', scope: 'blog' -%}
     {%- assign blog_instance = bi.customizations.results.first -%}
     {
       "properties_attributes": {
@@ -63,7 +63,7 @@ default_payload: |-
 ---
 {% parse_json "utils" %}{%- include 'modules/utils/init' -%}{% endparse_json %}
 {%- assign f = form.fields %}
-{%- graphql bi = 'modules/blog/get_blog_instance', scope: "blog" -%}
+{%- graphql bi = 'modules/blog/blog_instances/find', scope: "blog" -%}
 {%- assign blog = bi.customizations.results.first -%}
 {%- assign available_tags = blog.tags_filter | join: ', ' | split: ', ' -%}
 
