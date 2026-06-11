@@ -1,0 +1,14 @@
+---
+slug: 'dashboard/posts/:id'
+method: delete
+format: html
+authorization_policies:
+  - 'modules/blog/instance_blog_edition'
+  - 'modules/dashboard/dashboard_access'
+---
+{% liquid
+  function object = 'modules/blog/commands/blog_posts/delete', id: context.params.id
+  # platformos-check-disable DeprecatedTag
+  include 'modules/core/helpers/redirect_to', url: '/dashboard/blog', notice: 'Post has been successfully deleted', default: null, error: null, format: null, info: null, object: null
+  # platformos-check-enable DeprecatedTag
+%}

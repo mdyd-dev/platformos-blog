@@ -7,27 +7,26 @@ layout_name: 'modules/blog/blog'
   assign url = 'https://' | append: context.location.host | append: context.location.href
   assign blog_slug = context.params.blog_slug
   assign post_slug = context.params.post_slug
-  function blog_instance = 'modules/blog/lib/queries/blog_instances/find', scope: 'blog', slug: blog_slug, enabled: true
+  function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: blog_slug, enabled: true
 %}
 
 {% if blog_slug != blank and post_slug != blank and blog_instance %}
 
   {% liquid
-    assign blog_url = '/blog/' | append: blog_slug
     assign today = 'now' | date: '%F'
-    function posts = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, blog_instance_id: blog_instance.id, slug: post_slug
+    function posts = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_instance.id, tags: null, slug: post_slug, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: null
     assign blog_post = posts.results.first
   %}
 
   {%- if blog_post -%}
     {% liquid
-      function prev_collection = 'modules/blog/lib/queries/blog_posts/search', published_at_lt: blog_post.published_at, blog_instance_id: blog_post.blog_instance_id
+      function prev_collection = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: null, published_at_lt: blog_post.published_at, published_at_gt: null, except_ids: null
       assign previous_post = prev_collection.results.first
-      function next_collection = 'modules/blog/lib/queries/blog_posts/search', published_at_gt: blog_post.published_at, published_at_lte: today, blog_instance_id: blog_post.blog_instance_id
+      function next_collection = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: blog_post.published_at, except_ids: null
       assign next_post = next_collection.results.last
       assign posts_required_size = 3
-      function related_collection = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_post.blog_instance_id, tags: blog_post.tags, except_ids: blog_post.id
-      function other_collection = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, per_page: posts_required_size, blog_instance_id: blog_post.blog_instance_id, except_ids: blog_post.id
+      function related_collection = 'modules/blog/queries/blog_posts/search', per_page: posts_required_size, page: null, blog_instance_id: blog_post.blog_instance_id, tags: blog_post.tags, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: blog_post.id
+      function other_collection = 'modules/blog/queries/blog_posts/search', per_page: posts_required_size, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: blog_post.id
       assign related_posts = related_collection.results | concat: other_collection.results | uniq | limit: posts_required_size
     %}
 
@@ -68,7 +67,6 @@ layout_name: 'modules/blog/blog'
               %}
 
               {%- include 'modules/blog/blog/topics',
-                blog_url: blog_url
                 tags: blog_post.tags
               -%}
 
@@ -115,8 +113,8 @@ layout_name: 'modules/blog/blog'
       -%}
     {%- endif -%}
   {%- else -%}
-    {%- include 'modules/blog/blog/hero', title: 'Blog Post not found' -%}
+    {%- include 'modules/blog/blog/hero', title: 'Blog Post not found', subtitle: null, img_path: null -%}
   {%- endif -%}
 {%- else -%}
-  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled' -%}
+  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled', subtitle: null, img_path: null -%}
 {%- endif -%}

@@ -7,7 +7,6 @@
     blog_posts          - the posts records collection (results, pagination)
     slug                - blog slug (for the meta title)
     tags                - active category tags (string), or nil
-    per_page            - posts per page
     feature_post_first  - whether to feature the first post
 {% endcomment %}
 {% assign grid_view_cols_nr = 2 %}
@@ -54,7 +53,6 @@
           {%- include 'modules/blog/blog/pagination',
             max_full_pagination: 6,
             max_side_pagination: 2,
-            posts_per_page: per_page,
             posts: blog_posts
           -%}
 
@@ -80,7 +78,9 @@
 
             {%-
               include 'modules/blog/blog/facebook-widget',
-              facebook_link: blog_instance.facebook_link
+              facebook_link: blog_instance.facebook_link,
+              widget_title: null,
+              facebook_link_name: null
             %}
 
           </aside>
@@ -93,7 +93,7 @@
   </div>
 
   {% assign user_id = blog_instance.user.id | plus: 0 %}
-  {%- if current_user.id == user_id -%}
+  {%- if context.current_user.id == user_id -%}
     {%- include 'modules/blog/blog/flying-button',
       btn_text: 'Setting',
       btn_href: '/dashboard/blog/settings',
@@ -101,5 +101,5 @@
     -%}
   {%- endif -%}
 {% else %}
-  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled' -%}
+  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled', subtitle: null, img_path: null -%}
 {% endif %}

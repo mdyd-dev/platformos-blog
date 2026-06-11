@@ -1,0 +1,138 @@
+{% doc %}
+  Plain-form editor for a blog post (create + edit). No {% form %} / form_configuration:
+  a regular <form> with the CSRF token, the common-styling markdown editor for the
+  content and the common-styling image-upload component for hero_image / author_avatar.
+
+  @param {object} object - the post record (edit) or the submitted values (re-render)
+  @param {object} errors - validation errors keyed by field name
+  @param {string} action - the form action URL
+  @param {string} http_method - 'post' (create) or 'put' (edit)
+  @param {string} submit_label - the submit button label
+  @param {object} presigned_hero - presigned upload for the hero_image property
+  @param {object} presigned_avatar - presigned upload for the author_avatar property
+{% enddoc %}
+{% liquid
+  assign http_method = http_method | default: 'post'
+  assign submit_label = submit_label | default: 'Save'
+  assign tags_value = object.tags | join: ', '
+  assign published_at_value = object.published_at | date: '%Y-%m-%d'
+
+  assign publish_now_checked = false
+  if object.published_at != blank
+    assign published_ts = object.published_at | date: '%s'
+    assign now_ts = 'now' | date: '%s'
+    if now_ts >= published_ts
+      assign publish_now_checked = true
+    endif
+  endif
+
+  assign hero_files = '[]' | parse_json
+  if object.hero_image.url != blank
+    assign hero_file = '{}' | parse_json | hash_add_key: 'url', object.hero_image.url
+    assign hero_entry = '{}' | parse_json | hash_add_key: 'id', object.id | hash_add_key: 'file', hero_file
+    assign hero_files = hero_files | array_add: hero_entry
+  endif
+
+  assign avatar_files = '[]' | parse_json
+  if object.author_avatar.url != blank
+    assign avatar_file = '{}' | parse_json | hash_add_key: 'url', object.author_avatar.url
+    assign avatar_entry = '{}' | parse_json | hash_add_key: 'id', object.id | hash_add_key: 'file', avatar_file
+    assign avatar_files = avatar_files | array_add: avatar_entry
+  endif
+%}
+
+<section class="o-section">
+  <div class="o-container">
+    <form action="{{ action }}" method="post" class="pt-5 with-borders" data-tc="blog-post-form">
+      <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+      {% unless http_method == 'post' %}
+        <input type="hidden" name="_method" value="{{ http_method }}">
+      {% endunless %}
+
+      <div class="col-lg-8 col-md-12 col-sm-12 col-12">
+        <div class="form-group">
+          <label for="blog-post-title">Title</label>
+          <input type="text" class="form-control" id="blog-post-title" name="blog_post[title]" value="{{ object.title }}" data-tc="blog-post-title"{% render 'modules/common-styling/forms/error_input_handler', name: 'title', errors: errors.title %}>
+          {% render 'modules/common-styling/forms/error_list', name: 'title', errors: errors.title %}
+        </div>
+
+        <div class="form-group">
+          <label for="blog-post-published-at">Publish At</label>
+          <input type="date" class="form-control" id="blog-post-published-at" name="blog_post[published_at]" value="{{ published_at_value }}" placeholder="yyyy-mm-dd" data-tc="blog-post-published-at">
+        </div>
+
+        <div class="form-group">
+          <label class="switch">
+            <input type="checkbox" id="blog-post-publish-now" name="blog_post[publish_now]" value="1"{% if publish_now_checked %} checked{% endif %} data-tc="blog-post-publish-now">
+            Publish Now
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>Hero Image</label>
+          {% render 'modules/common-styling/forms/upload',
+            id: 'blog-post-hero-image',
+            name: 'blog_post[hero_image]',
+            presigned_upload: presigned_hero,
+            files: hero_files,
+            image_editor_enabled: false,
+            allowed_file_types: null,
+            max_number_of_files: 1,
+            aspect_ratio: null
+          %}
+        </div>
+
+        <div class="form-group">
+          <label for="blog-post-content">Content</label>
+          {% render 'modules/common-styling/forms/markdown',
+            id: 'blog-post-content',
+            name: 'blog_post[content]',
+            value: object.content,
+            presigned_upload: presigned_hero,
+            minlength: null,
+            maxlength: null
+          %}
+          {% render 'modules/common-styling/forms/error_list', name: 'content', errors: errors.content %}
+        </div>
+
+        <div class="form-group">
+          <label for="blog-post-excerpt">Excerpt</label>
+          <textarea class="form-control" id="blog-post-excerpt" name="blog_post[excerpt]" rows="5" data-tc="blog-post-excerpt"{% render 'modules/common-styling/forms/error_input_handler', name: 'excerpt', errors: errors.excerpt %}>{{ object.excerpt }}</textarea>
+          {% render 'modules/common-styling/forms/error_list', name: 'excerpt', errors: errors.excerpt %}
+        </div>
+
+        <div class="form-group">
+          <label>Author Avatar</label>
+          {% render 'modules/common-styling/forms/upload',
+            id: 'blog-post-author-avatar',
+            name: 'blog_post[author_avatar]',
+            presigned_upload: presigned_avatar,
+            files: avatar_files,
+            image_editor_enabled: false,
+            allowed_file_types: null,
+            max_number_of_files: 1,
+            aspect_ratio: null
+          %}
+        </div>
+
+        <div class="form-group">
+          <label for="blog-post-author-name">Author Name</label>
+          <input type="text" class="form-control" id="blog-post-author-name" name="blog_post[author_name]" value="{{ object.author_name }}" data-tc="blog-post-author-name"{% render 'modules/common-styling/forms/error_input_handler', name: 'author_name', errors: errors.author_name %}>
+          {% render 'modules/common-styling/forms/error_list', name: 'author_name', errors: errors.author_name %}
+        </div>
+
+        <div class="form-group">
+          <label for="blog-post-author-biography">Author Biography</label>
+          <input type="text" class="form-control" id="blog-post-author-biography" name="blog_post[author_biography]" value="{{ object.author_biography }}" data-tc="blog-post-author-biography">
+        </div>
+
+        <div class="form-group">
+          <label for="blog-post-tags">Tags</label>
+          <input type="text" class="form-control" id="blog-post-tags" name="blog_post[tags]" value="{{ tags_value }}" placeholder="Tags separated with comma" data-tc="blog-post-tags">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" data-tc="blog-post-submit">{{ submit_label }}</button>
+      </div>
+    </form>
+  </div>
+</section>

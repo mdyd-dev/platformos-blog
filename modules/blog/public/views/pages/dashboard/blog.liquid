@@ -20,9 +20,9 @@ authorization_policies:
 {% assign url_params = context.location.href | extract_url_params: url_template %}
 
 {%- include _utils.flash_messages -%}
-{%- function blog_instance = 'modules/blog/lib/queries/blog_instances/find', scope: 'blog' -%}
+{%- function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null -%}
 
-{%- function blog_posts = 'modules/blog/lib/queries/blog_posts/search', blog_instance_id: blog_instance.id, tags: params.tags, page: pagination_page, per_page: pagination_per_page -%}
+{%- function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: pagination_per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: params.tags, slug: null, published_at_lte: null, published_at_lt: null, published_at_gt: null, except_ids: null -%}
 
 <a class="btn btn-info float-right" href="/">Back to Blog</a>
 {%- include 'modules/blog/blog/admin/navigation' -%}
@@ -36,14 +36,18 @@ authorization_policies:
         <th>Actions</th>
       </tr>
       {% for blog_post in blog_posts.results %}
-        <tr>
-          <td><a href="/blog/post/{{ blog_instance.slug }}/{{ blog_post.slug }}">{{ blog_post.title }}</a></td>
+        <tr data-tc="blog-post-row">
+          <td><a href="/blog/post/{{ blog_instance.slug }}/{{ blog_post.slug }}" data-tc="blog-post-title-link">{{ blog_post.title }}</a></td>
           <td>{{ blog_post.author_name }}</td>
           <td>{{ blog_post.published_at | localize: 'long' }}</td>
           <td>
             <div class="btn-group" role="group" aria-label="Basic example">
-              <a href="/dashboard/posts/edit/{{ blog_post.id }}" class='btn btn-link'>Edit</a>
-              {% include_form 'modules/blog/blog_post_delete', id: blog_post.id %}
+              <a href="/dashboard/posts/edit/{{ blog_post.id }}" class='btn btn-link' data-tc="blog-post-edit">Edit</a>
+              <form action="/dashboard/posts/{{ blog_post.id }}" method="post" class="d-inline" onsubmit="return confirm('You will delete this post permanently. Are you sure?');" data-tc="blog-post-delete-form">
+                <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit" class="btn btn-link" data-tc="blog-post-delete">Delete</button>
+              </form>
             </div>
           </td>
         </tr>
@@ -53,4 +57,5 @@ authorization_policies:
     <div class="mt-5">
       {% include _utils.pagination, total_pages: blog_posts.total_pages, total_entries: blog_posts.total_entries, per_page: pagination_per_page, page: pagination_page %}
     </div>
+  </div>
 </section>

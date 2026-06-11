@@ -1,0 +1,43 @@
+{% comment %}
+  Unit tests for the blog_instance settings command (build -> check -> execute).
+  Covers: check rejecting missing required fields, boolean/array coercion in build,
+  and that execute persists (idempotent round-trip of the singleton instance).
+{% endcomment %}
+{% liquid
+  # --- check rejects missing required fields ---
+  assign empty = '{}' | parse_json
+  function invalid = 'modules/blog/commands/blog_instances/build', object: empty
+  function invalid = 'modules/blog/commands/blog_instances/check', object: invalid
+  function contract = 'modules/tests/assertions/invalid_object', contract: contract, object: invalid, field_name: 'check_rejects_blank'
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'title', object: invalid.errors
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'slug', object: invalid.errors
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'scope', object: invalid.errors
+
+  # --- build coerces checkboxes to booleans (absent -> false, present -> true) ---
+  assign off = '{}' | parse_json
+  assign off = off | hash_add_key: 'title', 'T'
+  assign off = off | hash_add_key: 'slug', 'blog'
+  assign off = off | hash_add_key: 'scope', 'blog'
+  function built_off = 'modules/blog/commands/blog_instances/build', object: off
+  function contract = 'modules/tests/assertions/equal', contract: contract, given: built_off.enabled, expected: false, field_name: 'enabled_absent_false'
+
+  assign on = off | hash_add_key: 'enabled', '1'
+  assign on = on | hash_add_key: 'tags_filter', 'a, b, c'
+  function built_on = 'modules/blog/commands/blog_instances/build', object: on
+  function contract = 'modules/tests/assertions/equal', contract: contract, given: built_on.enabled, expected: true, field_name: 'enabled_present_true'
+  assign tags_count = built_on.tags_filter.size
+  function contract = 'modules/tests/assertions/equal', contract: contract, given: tags_count, expected: 3, field_name: 'tags_filter_to_array'
+
+  # --- execute persists (idempotent round-trip of the singleton) ---
+  function blog = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null
+  assign rt = '{}' | parse_json
+  assign rt = rt | hash_add_key: 'id', blog.id
+  assign rt = rt | hash_add_key: 'title', blog.title
+  assign rt = rt | hash_add_key: 'scope', 'blog'
+  assign rt = rt | hash_add_key: 'slug', 'blog'
+  assign rt = rt | hash_add_key: 'enabled', '1'
+  function updated = 'modules/blog/commands/blog_instances/update', object: rt
+  function contract = 'modules/tests/assertions/valid_object', contract: contract, object: updated, field_name: 'update_valid'
+  function after = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null
+  function contract = 'modules/tests/assertions/equal', contract: contract, given: after.enabled, expected: true, field_name: 'enabled_persisted'
+%}

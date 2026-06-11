@@ -6,8 +6,8 @@ authorization_policies:
   - 'modules/blog/instance_blog_edition'
   - 'modules/dashboard/dashboard_access'
 ---
-
-{%- include "modules/blog/blog/admin/commons" -%}
-{%- include 'modules/blog/blog/admin/navigation' -%}
-
-{% include_form 'modules/blog/blog_post' %}
+{% include 'modules/blog/blog/admin/form_assets' %}
+{% liquid
+  assign object = '{}' | parse_json
+  render 'modules/blog/blog/admin/post_form_screen', object: object, errors: nil, action: '/dashboard/posts', http_method: 'post', submit_label: 'Create Post'
+%}

@@ -1,0 +1,22 @@
+---
+slug: 'dashboard/posts/:id'
+method: put
+format: html
+layout_name: 'modules/dashboard/dashboard'
+authorization_policies:
+  - 'modules/blog/instance_blog_edition'
+  - 'modules/dashboard/dashboard_access'
+---
+{% include 'modules/blog/blog/admin/form_assets' %}
+{% liquid
+  assign post_params = context.params.blog_post | hash_add_key: 'id', context.params.id
+  function object = 'modules/blog/commands/blog_posts/update', object: post_params
+  if object.valid
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/blog', notice: 'Post has been successfully updated', default: null, error: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  else
+    assign action = '/dashboard/posts/' | append: context.params.id
+    render 'modules/blog/blog/admin/post_form_screen', object: object, errors: object.errors, action: action, http_method: 'put', submit_label: 'Update Post'
+  endif
+%}

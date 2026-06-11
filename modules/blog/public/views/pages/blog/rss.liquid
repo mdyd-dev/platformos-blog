@@ -8,12 +8,12 @@ format: rss
 {%- endcapture -%}
 {% liquid
   assign url_params = context.location.href | extract_url_params: url_template
-  function blog_instance = 'modules/blog/lib/queries/blog_instances/find'
+  function blog_instance = 'modules/blog/queries/blog_instances/find', scope: null, slug: null, enabled: null
 %}
 {% if blog_instance %}
   {% liquid
     assign today = 'now' | date: '%F'
-    function blog_posts = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, blog_instance_id: blog_instance.id, tags: params.tags
+    function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_instance.id, tags: params.tags, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: null
   %}
   <?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0">

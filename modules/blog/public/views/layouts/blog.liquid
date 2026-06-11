@@ -6,7 +6,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  {%- include 'modules/blog/layouts/blog/csrf' %}
+  {%- include 'modules/blog/layouts/blog/csrf', form_authenticity_token: context.authenticity_token %}
   {%- include 'modules/blog/layouts/blog/meta-tags' %}
   {%- include 'modules/blog/layouts/blog/prefetch' %}
   {%- include 'modules/blog/layouts/blog/favicon' %}

@@ -1,0 +1,11 @@
+{% doc %}
+  Delete a blog_post record.
+
+  @param {string} id - blog_post record id
+  @returns {object} the execute result ({ id }, valid: true)
+{% enddoc %}
+{% liquid
+  assign object = '{}' | parse_json | hash_add_key: 'id', id
+  function object = 'modules/core/commands/execute', mutation_name: 'modules/blog/blog_posts/delete', object: object, selection: 'record'
+  return object
+%}

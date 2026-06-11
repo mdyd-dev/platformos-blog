@@ -1,0 +1,12 @@
+{% doc %}
+  Query object: build a presigned upload (url + payload) for a blog_instance
+  upload property, so the common-styling image-upload component can POST files
+  straight to storage.
+
+  @param {string} property_name - the upload property (e.g. 'header_image')
+  @returns {object} presigned upload data ({ upload_url, upload_url_payload }), or nil
+{% enddoc %}
+{% liquid
+  graphql res = 'modules/blog/blog_instances/presign', property_name: property_name
+  return res.presigned
+%}

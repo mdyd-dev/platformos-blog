@@ -1,0 +1,5 @@
+mutation delete($id: ID!) {
+  record: record_delete(table: "modules/blog/blog_post", id: $id) {
+    id
+  }
+}

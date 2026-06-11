@@ -6,16 +6,8 @@ authorization_policies:
   - 'modules/blog/instance_blog_edition'
   - 'modules/dashboard/dashboard_access'
 ---
-{%- function blog = 'modules/blog/lib/queries/blog_instances/find' %}
-
-{%- include 'modules/blog/blog/admin/navigation' -%}
-
-<section class="o-section">
-  <div class="o-container">
-    {% include_form "modules/blog/blog_settings",
-      resoruce: "modules/blog/blog_instance",
-      id: blog.id,
-      scope: 'blog'
-    %}
-  </div>
-</section>
+{% include 'modules/blog/blog/admin/form_assets' %}
+{% liquid
+  function object = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null
+  render 'modules/blog/blog/admin/settings_form_screen', object: object, errors: nil
+%}

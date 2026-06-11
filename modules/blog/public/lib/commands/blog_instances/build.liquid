@@ -1,0 +1,65 @@
+{% doc %}
+  Build stage for blog_instance settings update.
+
+  Produces a normalized object exposing the scalar/boolean fields (for `check`
+  and re-rendering) plus a `properties` array (PropertyInputType) for the record
+  mutation. Checkboxes that are unchecked are absent from params, so the boolean
+  flags are coerced explicitly (absent -> false).
+
+  @param {object} object - raw form params for blog settings (must include `id`)
+  @returns {object} normalized object with a `properties` array
+{% enddoc %}
+{% liquid
+  assign data = '{}' | parse_json
+  assign data = data | hash_add_key: 'id', object.id
+
+  assign string_names = 'title,subtitle,scope,slug,facebook_app_id,facebook_link,twitter_link,instagram_link,linkedin_link' | split: ','
+  for name in string_names
+    assign data = data | hash_add_key: name, object[name]
+  endfor
+
+  function tags_filter = 'modules/blog/lib/migrations/cast_to_array', value: object.tags_filter
+  unless tags_filter
+    assign tags_filter = '[]' | parse_json
+  endunless
+  assign data = data | hash_add_key: 'tags_filter', tags_filter
+
+  assign bool_names = 'enabled,sidebar_enabled,grid_view_enabled' | split: ','
+  for name in bool_names
+    assign raw = object[name]
+    if raw == blank or raw == 'false' or raw == false
+      assign data = data | hash_add_key: name, false
+    else
+      assign data = data | hash_add_key: name, true
+    endif
+  endfor
+
+  assign header_added = object.header_image.added.first
+  assign header_image_url = header_added | default: object.header_image.current.first
+  assign data = data | hash_add_key: 'header_image', header_image_url
+
+  # properties: PropertyInputType array for the record mutation
+  assign properties = '[]' | parse_json
+  for name in string_names
+    assign value = data[name]
+    if value != nil
+      assign item = '{}' | parse_json | hash_add_key: 'name', name | hash_add_key: 'value', value
+      assign properties = properties | array_add: item
+    endif
+  endfor
+  for name in bool_names
+    assign item = '{}' | parse_json | hash_add_key: 'name', name | hash_add_key: 'value_boolean', data[name]
+    assign properties = properties | array_add: item
+  endfor
+  assign item = '{}' | parse_json | hash_add_key: 'name', 'tags_filter' | hash_add_key: 'value_array', tags_filter
+  assign properties = properties | array_add: item
+  if header_added != blank
+    function item = 'modules/blog/lib/migrations/upload_property', name: 'header_image', url: header_added
+    if item != nil
+      assign properties = properties | array_add: item
+    endif
+  endif
+
+  assign data = data | hash_add_key: 'properties', properties
+  return data
+%}

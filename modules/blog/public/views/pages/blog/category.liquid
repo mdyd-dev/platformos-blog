@@ -1,32 +1,29 @@
 ---
-slug: 'blog/category'
+slug: 'blog/category(/:tags)'
 layout_name: 'modules/blog/blog'
 ---
-{%- capture url_template -%}
-{% if params.language %}/{lang}{%- endif -%}/<%= &blog_path =%>blog{/category}{/tags}{?page,per_page}
-{%- endcapture -%}
 {% liquid
-  assign url_params = context.location.href | extract_url_params: url_template
-  assign slug = url_params.slug[1] | default: 'blog'
-  assign tags = url_params.tags | replace: '-', ' ' | default: null
+  assign tags = null
+  if context.params.tags != blank
+    assign tags = context.params.tags | replace: '-', ' '
+  endif
   assign pagination_page = context.params.page | default: 1 | plus: 0
   assign per_page = context.params.per_page | default: 10 | plus: 0
   assign feature_post_first = false
   if pagination_page == 1
     assign feature_post_first = true
   endif
-  function blog_instance = 'modules/blog/lib/queries/blog_instances/find', scope: 'blog', enabled: true
-  assign blog_posts = nil
+  function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: true
+  assign blog_posts = null
   if blog_instance
     assign today = 'now' | date: '%F'
-    function blog_posts = 'modules/blog/lib/queries/blog_posts/search', published_at_lte: today, per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags
+    function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: null
   endif
 %}
 {% include 'modules/blog/blog/index',
   blog_instance: blog_instance,
   blog_posts: blog_posts,
-  slug: slug,
+  slug: 'blog',
   tags: tags,
-  per_page: per_page,
   feature_post_first: feature_post_first
 %}

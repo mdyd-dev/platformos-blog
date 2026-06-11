@@ -1,0 +1,21 @@
+{% doc %}
+  Check stage for blog_post create/update. Validates the required fields and
+  returns the object with `valid` / `errors` set (errors are returned, not raised).
+
+  @param {object} object - the built blog_post object
+  @returns {object} the object with `valid` and `errors` populated
+{% enddoc %}
+{% liquid
+  assign c = '{ "errors": {}, "valid": true }' | parse_json
+
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'title', key: null
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'content', key: null
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'slug', key: null
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'excerpt', key: null
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'blog_instance_id', key: null
+  function c = 'modules/core/validations/presence', c: c, object: object, field_name: 'author_name', key: null
+
+  assign object = object | hash_add_key: 'valid', c.valid
+  assign object = object | hash_add_key: 'errors', c.errors
+  return object
+%}

@@ -6,6 +6,13 @@ authorization_policies:
   - 'modules/blog/instance_blog_edition'
   - 'modules/dashboard/dashboard_access'
 ---
-{%- include 'modules/blog/blog/admin/navigation' -%}
-
-{% include_form 'modules/blog/blog_post', id: context.params.id %}
+{% include 'modules/blog/blog/admin/form_assets' %}
+{% liquid
+  function object = 'modules/blog/queries/blog_posts/find', id: context.params.id
+  if object == blank
+    redirect_to '/dashboard/blog'
+    break
+  endif
+  assign action = '/dashboard/posts/' | append: object.id
+  render 'modules/blog/blog/admin/post_form_screen', object: object, errors: nil, action: action, http_method: 'put', submit_label: 'Update Post'
+%}

@@ -1,0 +1,14 @@
+{% doc %}
+  Update a blog_post record (build -> check -> execute).
+
+  @param {object} object - raw form params for a blog post (must include `id`)
+  @returns {object} the updated record on success, or the invalid object with `errors`
+{% enddoc %}
+{% liquid
+  function object = 'modules/blog/commands/blog_posts/build', object: object
+  function object = 'modules/blog/commands/blog_posts/check', object: object
+  if object.valid
+    function object = 'modules/core/commands/execute', mutation_name: 'modules/blog/blog_posts/update', object: object, selection: 'record'
+  endif
+  return object
+%}

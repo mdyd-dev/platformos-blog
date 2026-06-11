@@ -1,0 +1,39 @@
+{% comment %}
+  Unit tests for the blog_post commands (build -> check -> execute).
+  Covers: check rejecting missing required fields, slug-from-title and Publish-Now
+  behaviour in build, and that create actually persists a record (then cleans up).
+{% endcomment %}
+{% liquid
+  # --- check rejects missing required fields ---
+  assign empty = '{}' | parse_json
+  function invalid = 'modules/blog/commands/blog_posts/build', object: empty
+  function invalid = 'modules/blog/commands/blog_posts/check', object: invalid
+  function contract = 'modules/tests/assertions/invalid_object', contract: contract, object: invalid, field_name: 'check_rejects_blank'
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'title', object: invalid.errors
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'content', object: invalid.errors
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'excerpt', object: invalid.errors
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'author_name', object: invalid.errors
+
+  # --- build derives slug from title and Publish Now sets published_at to today ---
+  assign input = '{}' | parse_json
+  assign input = input | hash_add_key: 'title', 'Unit Test Title Here'
+  assign input = input | hash_add_key: 'content', 'body'
+  assign input = input | hash_add_key: 'excerpt', 'ex'
+  assign input = input | hash_add_key: 'author_name', 'Tester'
+  assign input = input | hash_add_key: 'tags', 'one, two'
+  assign input = input | hash_add_key: 'publish_now', '1'
+  function built = 'modules/blog/commands/blog_posts/build', object: input
+  function contract = 'modules/tests/assertions/equal', contract: contract, given: built.slug, expected: 'unit-test-title-here', field_name: 'slug_from_title'
+  assign today = 'now' | date: '%Y-%m-%d'
+  function contract = 'modules/tests/assertions/equal', contract: contract, given: built.published_at, expected: today, field_name: 'publish_now_today'
+  assign tags_joined = built.tags | join: ','
+  function contract = 'modules/tests/assertions/equal', contract: contract, given: tags_joined, expected: 'one,two', field_name: 'tags_to_array'
+
+  # --- execute persists a record (then cleanup) ---
+  function created = 'modules/blog/commands/blog_posts/create', object: input
+  function contract = 'modules/tests/assertions/valid_object', contract: contract, object: created, field_name: 'create_valid'
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'id', object: created
+  function found = 'modules/blog/queries/blog_posts/find', id: created.id
+  function contract = 'modules/tests/assertions/equal', contract: contract, given: found.title, expected: 'Unit Test Title Here', field_name: 'persisted_title'
+  function _ = 'modules/blog/commands/blog_posts/delete', id: created.id
+%}
