@@ -8,5 +8,4 @@ tmp/
 playwright-report/
 test-results/
 .claude
-.backlog/
 platformos-tools.log
