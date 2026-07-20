@@ -1,29 +1,23 @@
-{% assign posts_list_class = 'c-posts-list' %}
+{% comment %}
+  Presentation partial: responsive grid of post cards.
 
-{%- if is_grid_view  == 'true' -%}
-  {%- capture posts_list_class -%}{{ posts_list_class }} c-posts-list--grid{%- endcapture -%}
-{% endif -%}
-
-{%- if grid_view_cols -%}
-  {%- capture posts_list_class -%}{{posts_list_class }} c-posts-list--cols-{{ grid_view_cols }}{%- endcapture -%}
-{%- endif -%}
-
-<div class="{{ posts_list_class }}">
-
+  Locals:
+    posts         - array of blog_post records
+    instance_slug - blog instance slug (for post URLs)
+    feature_first - boolean; renders the first post as a large featured card
+{% endcomment %}
+<div class="blog-posts-grid">
   {% for post in posts %}
-
-    {% if feature_first and forloop.first %}
-      {% assign is_featured_flag = true %}
-    {% else %}
-      {% assign is_featured_flag = false %}
-    {% endif %}
-
+    {% liquid
+      assign featured_flag = false
+      if feature_first and forloop.first
+        assign featured_flag = true
+      endif
+    %}
     {%- include 'modules/blog/blog/post',
       post_item: post,
-      is_featured: is_featured_flag,
+      featured: featured_flag,
       slug: instance_slug
     -%}
-
   {% endfor %}
-
 </div>

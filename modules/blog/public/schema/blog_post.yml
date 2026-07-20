@@ -22,6 +22,17 @@ properties:
     type: upload
     options:
       acl: public
+      versions:
+        - name: m
+          resize:
+            width: 736
+            height: 384
+            fit: cover
+        - name: lg
+          resize:
+            width: 1600
+            height: 900
+            fit: cover
   - name: author_avatar
     type: upload
     options:

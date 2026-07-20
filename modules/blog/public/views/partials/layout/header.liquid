@@ -1,27 +1,33 @@
 {% comment %}
-  Presentation partial: top navbar. The `dashboard_current_user` local is
-  fetched by the layout (layouts/blog.liquid) and passed in.
+  Presentation partial: sticky site header. The `dashboard_current_user`
+  local is fetched by the layout (layouts/blog.liquid) and passed in.
 {% endcomment %}
-<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-  <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="/">Home</a>
-  <ul class="nav navbar-nav flex-row float-right">
-    <li class="nav-item p-2 text-light">
-      {{ dashboard_current_user.current_user.first_name }}
-    </li>
-    {% if dashboard_current_user.current_user.dashboard.admin == "true" %}
-      <li class="nav-item text-nowrap text-light">
-        <a class="btn btn-primary ml-auto mr-2" href='/dashboard'>Dashboard</a>
-      </li>
-    {% endif %}
-    {% if dashboard_current_user.current_user %}
-      <li class="nav-item text-nowrap text-light">
-        {% include_form "modules/signup/log_out" %}
-      </li>
-    {% else %}
-      <li class="nav-item text-nowrap text-light">
-        <a href="/log-in" class="btn btn-primary">Log In</a>
-      </li>
-    {% endif %}
-  </ul>
-</nav>
+{% liquid
+  function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: true
+  assign brand_title = blog_instance.title | default: 'Blog'
+%}
+<header class="blog-header">
+  <div class="blog-container blog-header-inner">
+    <a class="blog-brand" href="/">
+      <img class="blog-brand-mark" src="{{ 'modules/blog/images/logo-mark.svg' | asset_url }}" alt="" width="29" height="24">
+      {{ brand_title }}
+    </a>
 
+    <nav class="blog-header-nav" aria-label="Site navigation">
+      <a class="pos-button pos-button-small" href="/blog/rss.rss" title="RSS feed">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-feed"></use></svg>
+        <span class="pos-label">RSS feed</span>
+      </a>
+
+      {% if dashboard_current_user.current_user %}
+        <span class="blog-header-user">{{ dashboard_current_user.current_user.first_name }}</span>
+        {% if dashboard_current_user.current_user.dashboard.admin == "true" %}
+          <a class="pos-button pos-button-small pos-button-primary" href="/dashboard">Dashboard</a>
+        {% endif %}
+        {% include_form "modules/signup/log_out" %}
+      {% else %}
+        <a class="pos-button pos-button-small pos-button-primary" href="/log-in">Log in</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>

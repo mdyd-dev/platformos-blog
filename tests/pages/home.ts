@@ -12,7 +12,7 @@ export class HomePage extends BasePage {
   constructor(page: Page) {
     super(page, '/');
     this.heading = this.page.locator('h1').first();
-    this.footer = this.page.locator('footer');
+    this.footer = this.page.locator('footer.blog-footer');
   }
 
   @step

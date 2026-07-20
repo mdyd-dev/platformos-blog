@@ -1,27 +1,36 @@
+{% comment %}
+  Presentation partial: social share links for a post.
+
+  Locals:
+    title    - optional label shown before the links
+    text     - share text (post title)
+    page_url - canonical URL of the shared page
+{% endcomment %}
 {% assign page_url_encode = page_url | url_encode %}
 
-<div class="c-share-list o-component">
-
+<div class="blog-share">
   {% if title %}
-    <div class="c-share-list__title">{{ title }}</div>
+    <span class="pos-supplementary">{{ title }}</span>
   {% endif %}
 
-  <div class="c-social-list c-social-list--color o-list-inline">
-
-    <a class="c-social-list__item o-icon-facebook" href="http://www.facebook.com/sharer.php?u={{ page_url_encode }}" target="_blank" rel="noopener" data-social-sharing>
-      <svg class="o-icon"><use xlink:href="#o-icon-facebook"></use></svg>
-    </a>
-
-    <a class="c-social-list__item o-icon-twitter" href="http://twitter.com/share?text={{ text | url_encode }}&url={{ page_url_encode }}" target="_blank" rel="noopener" data-social-sharing>
-      <svg class="o-icon"><use xlink:href="#o-icon-twitter"></use></svg>
-    </a>
-
-    <a class="c-social-list__item o-icon-linkedin" href="http://www.linkedin.com/shareArticle?mini=true&url={{ page_url_encode }}" target="_blank" rel="noopener" data-social-sharing>
-      <svg class="o-icon">
-        <use xlink:href="#o-icon-linkedin"></use>
-      </svg>
-    </a>
-
-  </div>
-
+  <ul class="blog-share-list">
+    <li>
+      <a href="https://www.facebook.com/sharer.php?u={{ page_url_encode }}" target="_blank" rel="noopener" title="Share on Facebook">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-facebook"></use></svg>
+        <span class="pos-label">Share on Facebook</span>
+      </a>
+    </li>
+    <li>
+      <a href="https://twitter.com/share?text={{ text | url_encode }}&url={{ page_url_encode }}" target="_blank" rel="noopener" title="Share on Twitter / X">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-twitter"></use></svg>
+        <span class="pos-label">Share on Twitter / X</span>
+      </a>
+    </li>
+    <li>
+      <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ page_url_encode }}" target="_blank" rel="noopener" title="Share on LinkedIn">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-linkedin"></use></svg>
+        <span class="pos-label">Share on LinkedIn</span>
+      </a>
+    </li>
+  </ul>
 </div>

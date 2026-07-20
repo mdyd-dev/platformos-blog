@@ -1,56 +1,65 @@
-{%- capture post_href -%}/blog/post/{{ slug }}/{{ post_item.slug }}{%- endcapture -%}
+{% comment %}
+  Presentation partial: a single post card (common-styling content card).
 
-<article class="c-post{% if is_featured %} c-post--feature{% endif -%}">
+  Locals:
+    post_item - the blog_post record
+    slug      - blog instance slug (for the post URL)
+    featured  - boolean; featured cards span the grid with a large layout
+{% endcomment %}
+{%- liquid
+  assign post_href = '/blog/post/' | append: slug | append: '/' | append: post_item.slug
+  if featured
+    assign image_src = post_item.hero_image.versions.lg | default: post_item.hero_image.url
+  else
+    assign image_src = post_item.hero_image.versions.m | default: post_item.hero_image.url
+  endif
+  assign word_count = post_item.content | strip_html | split: ' ' | size
+  assign read_minutes = word_count | divided_by: 180 | plus: 1
+-%}
+<article class="pos-card pos-card-content blog-post-card{% if featured %} blog-post-card-featured{% endif %}">
 
-  {%- if post_item.hero_image.url -%}
-    <a class="c-post__picture-cont" href="{{ post_href }}">
-      <div class="c-post__picture u-lazy-load" data-src="{{ post_item.hero_image.url }}" data-lazy-load>
-      </div>
+  {%- if image_src != blank -%}
+    <a class="pos-card-content-permalink" href="{{ post_href }}" tabindex="-1" aria-hidden="true">
+      <picture class="pos-card-content-image-container">
+        <img class="pos-card-content-image" src="{{ image_src }}" alt="" width="736" height="384" loading="lazy">
+      </picture>
     </a>
   {%- endif -%}
 
-  <div class="c-post__body">
+  <div class="blog-post-card-body">
+    {%- if post_item.tags.size > 0 -%}
+      <ul class="pos-tags-list">
+        {%- for post_tag in post_item.tags limit: 3 -%}
+          <li><a class="pos-tag pos-tag-interactive" href="/blog/category/{{ post_tag | replace: ' ', '-' }}">{{ post_tag }}</a></li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
 
-    <h2 class="c-post__title">
-
-      <a href="{{ post_href }}">
-        {{ post_item.title }}
-      </a>
-
+    <h2 class="pos-heading-4 pos-card-content-title">
+      <a class="pos-card-content-permalink" href="{{ post_href }}">{{ post_item.title }}</a>
     </h2>
 
-    <div class="c-post__meta">
-
-      <div class="c-post__date">
-        {{ post_item.published_at | localize: 'long' }}
-      </div>
-
-      {%- if post_item.tags -%}
-        <span class="c-post__meta-separator">|</span>
-
-        <ul class="c-post__tags">
-
-          {%- for post_tag in post_item.tags -%}
-          <li class="c-post__tags-item">
-              <a class="c-post__tags-link" href="/blog/category/{{ post_tag | replace: ' ', '-' }}">
-                {{ post_tag }}
-              </a>
-            </li>
-          {%- endfor -%}
-
-        </ul>
-      {%- endif -%}
-    </div>
-
-    <div class="c-post__text">
-      {%- if post_item.excerpt -%}
+    <p class="blog-post-card-excerpt">
+      {%- if post_item.excerpt != blank -%}
         {{ post_item.excerpt }}
       {%- else -%}
-        {{ post_item.content | markdown | html_to_text | truncate: 200, '...' }}
+        {{ post_item.content | markdown | html_to_text | truncate: 220, '...' }}
       {%- endif -%}
-    </div>
+    </p>
 
+    <footer class="pos-card-content-footer">
+      <ul>
+        <li>
+          {% render 'modules/common-styling/icon', icon: 'calendar', class: null %}
+          <time datetime="{{ post_item.published_at | date: '%F' }}">{{ post_item.published_at | date: '%b %-d, %Y' }}</time>
+        </li>
+        <li>
+          {% render 'modules/common-styling/icon', icon: 'clock', class: null %}
+          {{ read_minutes }} min read
+        </li>
+      </ul>
+      {{ post_item.author_name }}
+    </footer>
   </div>
 
 </article>
-

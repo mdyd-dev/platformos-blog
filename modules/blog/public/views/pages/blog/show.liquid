@@ -28,93 +28,109 @@ layout_name: 'modules/blog/blog'
       function related_collection = 'modules/blog/queries/blog_posts/search', per_page: posts_required_size, page: null, blog_instance_id: blog_post.blog_instance_id, tags: blog_post.tags, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: blog_post.id
       function other_collection = 'modules/blog/queries/blog_posts/search', per_page: posts_required_size, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: blog_post.id
       assign related_posts = related_collection.results | concat: other_collection.results | uniq | limit: posts_required_size
+      assign word_count = blog_post.content | strip_html | split: ' ' | size
+      assign read_minutes = word_count | divided_by: 180 | plus: 1
     %}
 
     {% content_for 'meta_title' %}
       {{ blog_post.title }}
     {% endcontent_for %}
+    {% content_for 'meta_desc' %}
+      {{- blog_post.excerpt | strip_html | truncate: 160 -}}
+    {% endcontent_for %}
 
     {%- capture post_meta -%}
-      by <b>{{ blog_post.author_name }}</b>
-      |
-      {{ blog_post.published_at | localize: 'long' }}
+      {%- assign author_avatar_path = blog_post.author_avatar.versions.thumb | default: blog_post.author_avatar.url -%}
+      {% render 'modules/common-styling/user/avatar', size: 'md', name: blog_post.author_name, image_src: author_avatar_path, class: null %}
+      <span>by <b>{{ blog_post.author_name }}</b></span>
+      <span aria-hidden="true">&middot;</span>
+      <time datetime="{{ blog_post.published_at | date: '%F' }}">{{ blog_post.published_at | date: '%b %-d, %Y' }}</time>
+      <span aria-hidden="true">&middot;</span>
+      <span>{{ read_minutes }} min read</span>
     {%- endcapture -%}
-    {% assign image_url = blog_post.hero_image.url %}
-    {%- include 'modules/blog/blog/hero-post',
+
+    {% assign image_url = blog_post.hero_image.versions.lg | default: blog_post.hero_image.url %}
+    {%- include 'modules/blog/blog/hero',
       title: blog_post.title,
-      subtitle: post_meta,
-      img_path: image_url
+      subtitle: null,
+      img_path: image_url,
+      meta_html: post_meta
       -%}
 
-    <div class="o-section">
+    <div class="blog-container blog-section">
 
-      <div class="c-layout o-container o-container--narrow">
+      <div class="blog-article">
 
-        <div class="c-layout__main">
+        <article class="pos-card blog-article-card">
 
-          <article class="c-article o-component">
+          <div class="pos-prose">
+            {{ blog_post.content | markdown }}
+          </div>
 
-            <div class="c-article__content">
-              {{ blog_post.content | markdown }}
-            </div>
+          <footer class="blog-article-footer">
 
-            <footer class="c-article__footer">
+            {%- if blog_post.tags.size > 0 -%}
+              <ul class="pos-tags-list">
+                {%- for tag in blog_post.tags -%}
+                  <li><a class="pos-tag pos-tag-interactive" href="/blog/category/{{ tag | replace: ' ', '-' }}">{{ tag }}</a></li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
 
-              {% include 'modules/blog/blog/share-list',
-                title: 'Share this article',
-                text:  blog_post.title,
-                page_url: url
-              %}
+            {% include 'modules/blog/blog/share-list',
+              title: 'Share',
+              text:  blog_post.title,
+              page_url: url
+            %}
 
-              {%- include 'modules/blog/blog/topics',
-                tags: blog_post.tags
-              -%}
+          </footer>
 
-            </footer>
+        </article>
 
-          </article>
-
-          {% assign author_avatar_path = blog_post.author_avatar.versions.thumb | default: blog_post.author_avatar.url %}
-          {%- include 'modules/blog/blog/user',
-            img_path: author_avatar_path,
-            name: blog_post.author_name,
-            description: blog_post.author_biography
-          -%}
-
-          {%- include 'modules/blog/blog/siblings-nav',
-            previous_post: previous_post,
-            next_post: next_post,
-            blog_instance: blog_instance
-          -%}
-
-          {%- include 'modules/blog/blog/comments',
-            page_url: url
-          -%}
-
+        {% assign author_avatar_path = blog_post.author_avatar.versions.thumb | default: blog_post.author_avatar.url %}
+        <div class="pos-card blog-author-card">
+          {% render 'modules/common-styling/user/avatar', size: 'xl', name: blog_post.author_name, image_src: author_avatar_path, class: null %}
+          <div>
+            <p class="blog-author-card-name">{{ blog_post.author_name }}</p>
+            {%- if blog_post.author_biography != blank -%}
+              <p class="blog-author-card-bio">{{ blog_post.author_biography }}</p>
+            {%- endif -%}
+          </div>
         </div>
+
+        {%- include 'modules/blog/blog/siblings-nav',
+          previous_post: previous_post,
+          next_post: next_post,
+          blog_instance: blog_instance
+        -%}
+
+        {%- include 'modules/blog/blog/comments',
+          page_url: url,
+          facebook_app_id: blog_instance.facebook_app_id
+        -%}
 
       </div>
 
     </div>
 
     {%- include 'modules/blog/blog/posts-section',
-      section_title: 'Related Articles',
+      section_title: 'Related articles',
       related_posts: related_posts,
       blog_instance: blog_instance
     -%}
 
     {% assign user_id = blog_instance.user.id | plus: 0 %}
-    {%- if current_user.id == user_id -%}
+    {%- if context.current_user.id == user_id -%}
       {% assign edit_post_href = '/blog/posts/edit/' | append: blog_post.id %}
       {%- include 'modules/blog/blog/flying-button',
-        btn_text: 'Edit',
+        btn_text: 'Edit post',
         btn_href: edit_post_href,
-        btn_icon: 'pencil2'
+        btn_icon: 'pencil'
       -%}
     {%- endif -%}
   {%- else -%}
-    {%- include 'modules/blog/blog/hero', title: 'Blog Post not found', subtitle: null, img_path: null -%}
+    {%- include 'modules/blog/blog/hero', title: 'Blog post not found', subtitle: null, img_path: null, meta_html: null -%}
   {%- endif -%}
 {%- else -%}
-  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled', subtitle: null, img_path: null -%}
+  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled', subtitle: null, img_path: null, meta_html: null -%}
 {%- endif -%}

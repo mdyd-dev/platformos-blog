@@ -7,23 +7,19 @@
     section_title  - optional heading
 {% endcomment %}
 {% if related_posts.size > 0 %}
-  <section class="o-section o-section--fill-grey">
+  <section class="blog-container blog-section">
 
-    <div class="o-container">
+    {% if section_title %}
+      <header class="blog-section-header">
+        <h2 class="pos-heading-3 blog-section-title">{{ section_title }}</h2>
+      </header>
+    {% endif %}
 
-      {% if section_title %}
-        <div class="o-section__title">{{ section_title }}</div>
-      {% endif %}
-
-      {%- include 'modules/blog/blog/posts-list',
-        is_grid_view: true,
-        grid_view_cols: 3,
-        feature_first: false,
-        posts: related_posts,
-        instance_slug: blog_instance.slug
-      -%}
-
-    </div>
+    {%- include 'modules/blog/blog/posts-list',
+      feature_first: false,
+      posts: related_posts,
+      instance_slug: blog_instance.slug
+    -%}
 
   </section>
 {% endif %}

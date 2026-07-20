@@ -44,3 +44,8 @@ properties:
             width: 740
             height: 300
             fit: cover
+        - name: hero
+          resize:
+            width: 1920
+            height: 800
+            fit: cover

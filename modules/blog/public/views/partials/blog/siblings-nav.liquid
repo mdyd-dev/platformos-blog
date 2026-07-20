@@ -6,30 +6,28 @@
     next_post      - the next blog_post record (or nil)
     blog_instance  - the blog_instance record (for building post URLs)
 {% endcomment %}
-<div class="c-siblings-nav o-component">
+{% if previous_post or next_post %}
+  <nav class="blog-siblings" aria-label="More posts">
 
-  {% if previous_post %}
-    <a class="c-siblings-nav__link c-siblings-nav__link--prev" href="/blog/post/{{ blog_instance.slug }}/{{ previous_post.slug }}">
+    {% if previous_post %}
+      <a class="pos-card" href="/blog/post/{{ blog_instance.slug }}/{{ previous_post.slug }}">
+        <span class="blog-siblings-label">
+          {% render 'modules/common-styling/icon', icon: 'dashLeft', class: null %}
+          Previous post
+        </span>
+        <span class="pos-card-content-title">{{ previous_post.title }}</span>
+      </a>
+    {% endif %}
 
-      <svg class="o-icon o-icon-arrow-left">
-        <use xlink:href="#o-icon-arrow-left"></use>
-      </svg>
+    {%- if next_post -%}
+      <a class="pos-card blog-siblings-next" href="/blog/post/{{ blog_instance.slug }}/{{ next_post.slug }}">
+        <span class="blog-siblings-label">
+          Next post
+          {% render 'modules/common-styling/icon', icon: 'dashRight', class: null %}
+        </span>
+        <span class="pos-card-content-title">{{ next_post.title }}</span>
+      </a>
+    {% endif %}
 
-      {{ previous_post.title }}
-
-    </a>
-  {% endif %}
-
-  {%- if next_post -%}
-    <a class="c-siblings-nav__link c-siblings-nav__link--next" href="/blog/post/{{ blog_instance.slug }}/{{ next_post.slug }}">
-
-      {{ next_post.title }}
-
-      <svg class="o-icon o-icon-arrow-right">
-        <use xlink:href="#o-icon-arrow-right"></use>
-      </svg>
-
-    </a>
-  {% endif %}
-
-</div>
+  </nav>
+{% endif %}

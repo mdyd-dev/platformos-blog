@@ -9,97 +9,78 @@
     tags                - active category tags (string), or nil
     feature_post_first  - whether to feature the first post
 {% endcomment %}
-{% assign grid_view_cols_nr = 2 %}
-
 {% if slug != blank and blog_instance %}
   {%- content_for 'meta_title' -%}
-    {{ slug | capitalize }}
+    {% if tags %}{{ tags | capitalize }} — {% endif %}{{ blog_instance.title | default: slug | capitalize }}
   {%- endcontent_for -%}
 
-  {% assign header_image_path = blog_instance.header_image.versions.normal | default: blog_instance.header_image.url %}
+  {% liquid
+    assign header_image_path = blog_instance.header_image.versions.hero | default: blog_instance.header_image.versions.normal | default: blog_instance.header_image.url
+  %}
   {%- include 'modules/blog/blog/hero',
     title: blog_instance.title,
     subtitle: blog_instance.subtitle,
-    img_path: header_image_path
+    img_path: header_image_path,
+    meta_html: null
   -%}
 
-  <div class="o-section">
+  <div class="blog-container blog-section">
 
-    <div class="o-container">
-
-      <div class="c-layout">
-
-        <section class="c-layout__main">
-
-          {% if tags %}
-            <div class="o-section__title">Category: <b>{{ tags | join: ',' }}</b></div>
-          {% endif %}
-
-          {% if blog_posts.results.size == 0 %}
-            <div class="o-section__title">
-              Sorry, no content matched your criteria.<br>
-              <a href="{{ context.location.href }}">Please go back to main blog page</a>
-            </div>
-          {% endif %}
-
-          {%- include 'modules/blog/blog/posts-list',
-            is_grid_view: blog_instance.grid_view_enabled,
-            grid_view_cols: grid_view_cols_nr,
-            feature_first: feature_post_first,
-            posts: blog_posts.results,
-            instance_slug: blog_instance.slug
-          -%}
-
-          {%- include 'modules/blog/blog/pagination',
-            max_full_pagination: 6,
-            max_side_pagination: 2,
-            posts: blog_posts
-          -%}
-
-        </section>
-
-        {%- if blog_instance.sidebar_enabled -%}
-          <aside class="c-layout__sidebar">
-
-            {% assign rss_link = '/blog/rss.rss' %}
-            {% include 'modules/blog/blog/social-list',
-              widget_title: 'Be in touch',
-              facebook_link: blog_instance.facebook_link,
-              twitter_link: blog_instance.twitter_link,
-              instagram_link: blog_instance.instagram_link,
-              linkedin_link: blog_instance.linkedin_link,
-              rss_link: rss_link
-            %}
-
-            {%- include 'modules/blog/blog/tags-widget',
-              widget_title: 'Categories',
-              tags: blog_instance.tags_filter
-            -%}
-
-            {%-
-              include 'modules/blog/blog/facebook-widget',
-              facebook_link: blog_instance.facebook_link,
-              widget_title: null,
-              facebook_link_name: null
-            %}
-
-          </aside>
+    <header class="blog-section-header">
+      <h2 class="pos-heading-3 blog-section-title">
+        {%- if tags -%}
+          Posts tagged &ldquo;{{ tags }}&rdquo;
+        {%- else -%}
+          Latest articles
         {%- endif -%}
+      </h2>
 
+      {%- if blog_instance.tags_filter.size > 0 -%}
+        <nav aria-label="Categories">
+          <ul class="pos-tags-list blog-tag-filter">
+            <li><a class="pos-tag pos-tag-interactive" href="/" {% unless tags %}aria-current="true"{% endunless %}>All</a></li>
+            {%- for tag in blog_instance.tags_filter -%}
+              <li>
+                <a class="pos-tag pos-tag-interactive" href="/blog/category/{{ tag | replace: ' ', '-' }}" {% if tags == tag %}aria-current="true"{% endif %}>
+                  {{ tag }}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+    </header>
+
+    {% if blog_posts.results.size == 0 %}
+      <div class="pos-card pos-text-center">
+        <h3 class="pos-heading-4">Nothing here yet</h3>
+        <p class="pos-supplementary">
+          No posts matched your criteria.
+          <a href="/">Go back to the blog home page</a>
+        </p>
       </div>
+    {% else %}
+      {%- include 'modules/blog/blog/posts-list',
+        feature_first: feature_post_first,
+        posts: blog_posts.results,
+        instance_slug: blog_instance.slug
+      -%}
 
-    </div>
+      <div class="pos-mt-section-section">
+        {% render 'modules/common-styling/pagination', total_pages: blog_posts.total_pages %}
+      </div>
+    {% endif %}
 
   </div>
 
   {% assign user_id = blog_instance.user.id | plus: 0 %}
   {%- if context.current_user.id == user_id -%}
     {%- include 'modules/blog/blog/flying-button',
-      btn_text: 'Setting',
+      btn_text: 'Blog settings',
       btn_href: '/dashboard/blog/settings',
-      btn_icon: 'equalizer2'
+      btn_icon: 'cog'
     -%}
   {%- endif -%}
 {% else %}
-  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled', subtitle: null, img_path: null -%}
+  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled', subtitle: null, img_path: null, meta_html: null -%}
 {% endif %}

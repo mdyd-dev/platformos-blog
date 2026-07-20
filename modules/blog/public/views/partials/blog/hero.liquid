@@ -1,11 +1,29 @@
-<div class="c-hero c-hero--bottom" data-src="{{ img_path }}" data-lazy-load>
-  <div class="c-hero__container o-container">
+{% comment %}
+  Presentation partial: full-width hero band.
+
+  Locals:
+    title      - h1 text
+    subtitle   - optional lead paragraph
+    img_path   - optional background image URL (falls back to a gradient)
+    meta_html  - optional pre-rendered HTML shown under the title
+                 (author avatar, date, tags... on post pages)
+{% endcomment %}
+<section class="blog-hero">
+  {%- if img_path != blank -%}
+    <img class="blog-hero-image" src="{{ img_path }}" alt="" width="1920" height="800" loading="eager" fetchpriority="high">
+  {%- endif -%}
+
+  <div class="blog-container blog-hero-content">
     {%- if title -%}
-      <h1 class="c-hero__title">{{ title }}</h1>
+      <h1 class="blog-hero-title">{{ title }}</h1>
     {%- endif -%}
 
-    {%- if subtitle -%}
-      <div class="c-hero__subtitle">{{ subtitle }}</div>
+    {%- if subtitle != blank -%}
+      <p class="blog-hero-subtitle">{{ subtitle }}</p>
+    {%- endif -%}
+
+    {%- if meta_html != blank -%}
+      <div class="blog-hero-meta">{{ meta_html | html_safe }}</div>
     {%- endif -%}
   </div>
-</div>
+</section>
