@@ -15,7 +15,7 @@
       </header>
     {% endif %}
 
-    {%- include 'modules/blog/blog/posts-list',
+    {%- render 'modules/blog/blog/posts-list',
       feature_first: false,
       posts: related_posts,
       instance_slug: blog_instance.slug

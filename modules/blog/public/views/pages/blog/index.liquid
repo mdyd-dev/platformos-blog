@@ -1,11 +1,13 @@
 ---
 slug: /
-layout_name: 'modules/blog/blog'
+layout: 'modules/blog/blog'
 ---
-{%- capture url_template -%}
-{% if params.language %}/{lang}{%- endif -%}/<%= &blog_path =%>blog{/category}{/tags}{?page,per_page}
-{%- endcapture -%}
 {% liquid
+  assign url_template = ''
+  if context.params.language
+    assign url_template = '/{lang}'
+  endif
+  assign url_template = url_template | append: '/<%= &blog_path =%>blog{/category}{/tags}{?page,per_page}'
   assign url_params = context.location.href | extract_url_params: url_template
   assign slug = url_params.slug[1] | default: 'blog'
   assign tags = url_params.tags | replace: '-', ' ' | default: null

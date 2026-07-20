@@ -1,6 +1,6 @@
 ---
 name: dashboard_access
-redirect_to: "/log-in"
+redirect_to: "/sessions/new"
 flash_alert: "Only dashboard admin can see this page. Please contact page administrator."
 ---
 {%- graphql g = "modules/dashboard/dashboard_current_user" %}

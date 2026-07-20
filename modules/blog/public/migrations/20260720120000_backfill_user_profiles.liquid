@@ -1,0 +1,28 @@
+{% comment %}
+  Backfills modules/user/profile records for users created by the legacy signup
+  module. pos-module-user's current_profile helper (and the auth rebuilt on it
+  in task 1.5) expects every user to have a modules/user/profile record, but the
+  user module only creates them for users registered through its own commands.
+{% endcomment %}
+{% liquid
+  graphql existing = 'modules/blog/migrations/user_profiles'
+  assign seen = '{}' | parse_json
+  for profile in existing.records.results
+    assign seen = seen | hash_add_key: profile.user_id, true
+  endfor
+
+  graphql users = 'modules/blog/migrations/users'
+  for user in users.users.results
+    unless seen[user.id]
+      assign object = '{}' | parse_json
+      assign object = object | hash_add_key: 'user_id', user.id
+      assign object = object | hash_add_key: 'email', user.email
+      assign object = object | hash_add_key: 'first_name', user.first_name
+      assign object = object | hash_add_key: 'last_name', user.last_name
+      function created = 'modules/user/commands/profiles/create', object: object
+      unless created.valid
+        log created, type: 'ERROR: backfill_user_profiles'
+      endunless
+    endunless
+  endfor
+%}

@@ -7,13 +7,13 @@
     blog_instance  - the blog_instance record (for building post URLs)
 {% endcomment %}
 {% if previous_post or next_post %}
-  <nav class="blog-siblings" aria-label="More posts">
+  <nav class="blog-siblings" aria-label="{{ 'modules/blog/blog.more_posts' | t }}">
 
     {% if previous_post %}
       <a class="pos-card" href="/blog/post/{{ blog_instance.slug }}/{{ previous_post.slug }}">
         <span class="blog-siblings-label">
           {% render 'modules/common-styling/icon', icon: 'dashLeft', class: null %}
-          Previous post
+          {{ 'modules/blog/blog.previous_post' | t }}
         </span>
         <span class="pos-card-content-title">{{ previous_post.title }}</span>
       </a>
@@ -22,7 +22,7 @@
     {%- if next_post -%}
       <a class="pos-card blog-siblings-next" href="/blog/post/{{ blog_instance.slug }}/{{ next_post.slug }}">
         <span class="blog-siblings-label">
-          Next post
+          {{ 'modules/blog/blog.next_post' | t }}
           {% render 'modules/common-styling/icon', icon: 'dashRight', class: null %}
         </span>
         <span class="pos-card-content-title">{{ next_post.title }}</span>

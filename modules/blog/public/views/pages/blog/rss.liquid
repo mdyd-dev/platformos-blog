@@ -2,31 +2,27 @@
 slug: 'blog/rss'
 format: rss
 ---
-
-{%- capture url_template -%}
-{% if params.language %}/{lang}{%- endif -%}/blog/rss.rss
-{%- endcapture -%}
 {% liquid
-  assign url_params = context.location.href | extract_url_params: url_template
   function blog_instance = 'modules/blog/queries/blog_instances/find', scope: null, slug: null, enabled: null
+  assign base_url = 'https://' | append: context.location.host
 %}
 {% if blog_instance %}
   {% liquid
     assign today = 'now' | date: '%F'
-    function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_instance.id, tags: params.tags, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: null
+    function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_instance.id, tags: context.params.tags, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: null
   %}
   <?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0">
     <channel>
       <title>{{ blog_instance.title }}</title>
-      <link>https://desksnear.me/blog</link>
+      {{ '<link>' }}{{ base_url }}/{{ '</link>' }}
       {%- for blog_post in blog_posts.results -%}
         <item>
           <title>{{ blog_post.title }}</title>
           <description>{{ blog_post.excerpt }}</description>
           <pubDate>{{ blog_post.published_at  | localize: 'long' }}</pubDate>
-          <link>https://desksnear.me/blog/post/{{ blog_post.slug }}</link>
-          <guid>https://desksnear.me/blog/post/{{ blog_post.slug }}</guid>
+          {{ '<link>' }}{{ base_url }}/blog/post/{{ blog_instance.slug }}/{{ blog_post.slug }}{{ '</link>' }}
+          <guid>{{ base_url }}/blog/post/{{ blog_instance.slug }}/{{ blog_post.slug }}</guid>
         </item>
       {%- endfor -%}
     </channel>

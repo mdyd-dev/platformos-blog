@@ -1,35 +1,35 @@
 {%- liquid
-  graphql dashboard_current_user = 'modules/dashboard/dashboard_current_user'
+  function current_profile = 'modules/user/helpers/current_profile'
   graphql ga = 'modules/dashboard/get_google_analytics'
   assign ga_tracking_id = ga.customizations.results.last.tracking_id
 -%}
 <!DOCTYPE html>
 <html lang="en" class="pos-app pos-theme-darkEnabled">
 <head>
-  {%- include 'modules/blog/layouts/blog/csrf', form_authenticity_token: context.authenticity_token %}
-  {%- include 'modules/blog/layouts/blog/meta-tags' %}
-  {%- include 'modules/blog/layouts/blog/prefetch' %}
-  {%- include 'modules/blog/layouts/blog/favicon' %}
-  {%- include 'modules/blog/layouts/blog/stylesheets' -%}
+  {%- render 'modules/blog/layouts/blog/csrf', form_authenticity_token: context.authenticity_token %}
+  {%- render 'modules/blog/layouts/blog/meta-tags' %}
+  {%- render 'modules/blog/layouts/blog/prefetch' %}
+  {%- render 'modules/blog/layouts/blog/favicon' %}
+  {%- render 'modules/blog/layouts/blog/stylesheets' -%}
   {%- include 'modules/blog/layouts/blog/page-title' -%}
   {%- include 'modules/blog/layouts/blog/page-description' -%}
-  {%- include 'modules/blog/layouts/blog/google_analytics', tracking_id: ga_tracking_id -%}
+  {%- render 'modules/blog/layouts/blog/google_analytics', tracking_id: ga_tracking_id -%}
 
   {% yield 'head_content' %}
 </head>
 
 <body>
-  {% include 'modules/blog/layout/header', dashboard_current_user: dashboard_current_user %}
-  {% include 'modules/blog/layouts/blog/icons' %}
+  {% render 'modules/blog/layout/header', context: context, profile: current_profile %}
+  {% render 'modules/blog/layouts/blog/icons' %}
 
   <div class="blog-flash">
-    {% include 'modules/utils/flash_messages' %}
+    {% render 'modules/blog/layouts/blog/flash_messages', context: context %}
   </div>
 
   <main>
     {{ content_for_layout }}
   </main>
 
-  {%- include 'modules/blog/layout/footer' -%}
+  {%- render 'modules/blog/layout/footer' -%}
 </body>
 </html>

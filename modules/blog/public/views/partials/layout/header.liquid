@@ -1,7 +1,7 @@
-{% comment %}
-  Presentation partial: sticky site header. The `dashboard_current_user`
-  local is fetched by the layout (layouts/blog.liquid) and passed in.
-{% endcomment %}
+{% doc %}
+  @param {object} context - The request context (CSRF token for the log-out form)
+  @param {object} profile - The current profile from 'modules/user/helpers/current_profile'
+{% enddoc %}
 {% liquid
   function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: true
   assign brand_title = blog_instance.title | default: 'Blog'
@@ -14,19 +14,20 @@
     </a>
 
     <nav class="blog-header-nav" aria-label="Site navigation">
-      <a class="pos-button pos-button-small" href="/blog/rss.rss" title="RSS feed">
+      <a class="pos-button pos-button-small" href="/blog/rss.rss" title="{{ 'modules/blog/layout.rss_feed' | t }}">
         <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-feed"></use></svg>
-        <span class="pos-label">RSS feed</span>
+        <span class="pos-label">{{ 'modules/blog/layout.rss_feed' | t }}</span>
       </a>
 
-      {% if dashboard_current_user.current_user %}
-        <span class="blog-header-user">{{ dashboard_current_user.current_user.first_name }}</span>
-        {% if dashboard_current_user.current_user.dashboard.admin == "true" %}
-          <a class="pos-button pos-button-small pos-button-primary" href="/dashboard">Dashboard</a>
-        {% endif %}
-        {% include_form "modules/signup/log_out" %}
+      {% if profile.user %}
+        <a class="blog-header-user" href="/edit-profile" title="{{ 'modules/blog/auth.edit_profile' | t }}" data-tc="header-user">{{ profile.first_name | default: profile.user.email }}</a>
+        <a class="pos-button pos-button-small pos-button-primary" href="/dashboard/blog">{{ 'modules/blog/layout.dashboard' | t }}</a>
+        <form action="/log-out" method="post" class="blog-header-logout" data-tc="log-out-form">
+          <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+          <button type="submit" class="pos-button pos-button-small">{{ 'modules/blog/auth.log_out' | t }}</button>
+        </form>
       {% else %}
-        <a class="pos-button pos-button-small pos-button-primary" href="/log-in">Log in</a>
+        <a class="pos-button pos-button-small pos-button-primary" href="/sessions/new">{{ 'modules/blog/auth.log_in' | t }}</a>
       {% endif %}
     </nav>
   </div>

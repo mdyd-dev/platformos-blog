@@ -6,20 +6,20 @@ import process from 'process';
  * behind the `dashboard_access` / `instance_blog_edition` policies — can be
  * exercised by the posts/admin specs.
  *
+ * Uses the pos-module-user built-in /sessions/new page (task 1.5). A successful
+ * login redirects to the homepage, where the header shows the user widget.
+ *
  * Credentials come from the environment:
  *   - E2E_TEST_EMAIL    (default: admin@example.com)
  *   - E2E_TEST_PASSWORD (required)
- *
- * NOTE: the shared auth fixtures/credentials are owned by task 1.5; until they
- * are provisioned these specs are skipped (see posts.spec.ts / admin.spec.ts).
  */
 export const ADMIN_EMAIL = process.env.E2E_TEST_EMAIL ?? 'admin@example.com';
 export const ADMIN_PASSWORD = process.env.E2E_TEST_PASSWORD ?? '';
 
 export async function loginAsAdmin(page: Page): Promise<void> {
-  await page.goto('/log-in', { waitUntil: 'domcontentloaded' });
-  await page.locator('input[name="email"]').fill(ADMIN_EMAIL);
-  await page.locator('input[name="password"]').fill(ADMIN_PASSWORD);
+  await page.goto('/sessions/new', { waitUntil: 'domcontentloaded' });
+  await page.locator('form[action="/sessions"] input[name="email"]').fill(ADMIN_EMAIL);
+  await page.locator('form[action="/sessions"] input[name="password"]').fill(ADMIN_PASSWORD);
   await page.getByRole('button', { name: 'Log In' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page.getByTestId('header-user')).toBeVisible();
 }

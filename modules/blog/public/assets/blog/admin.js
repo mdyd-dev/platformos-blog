@@ -229,15 +229,6 @@ webpackJsonp(
         function _interopRequireDefault(obj) {
           return obj && obj.__esModule ? obj : { default: obj };
         }
-        var wysiwygContent = document.querySelector('[data-wysiwyg="content"]');
-        if (wysiwygContent) {
-          __webpack_require__
-            .e(0)
-            .then(__webpack_require__.bind(null, 2))
-            .then(function (wysiwyg) {
-              new wysiwyg.default(wysiwygContent);
-            });
-        }
         var dateField = document.querySelector('[data-date="client"]');
         if (dateField) {
           new _DateInterceptor.default();

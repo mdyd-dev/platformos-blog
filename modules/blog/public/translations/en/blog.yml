@@ -1,0 +1,23 @@
+en:
+  blog:
+    latest_articles: Latest articles
+    posts_tagged: Posts tagged “%{tags}”
+    all: All
+    categories: Categories
+    nothing_here: Nothing here yet
+    no_posts_matched: No posts matched your criteria.
+    back_home: Go back to the blog home page
+    not_enabled: Blog is not enabled
+    post_not_found: Blog post not found
+    blog_settings: Blog settings
+    edit_post: Edit post
+    share: Share
+    share_on_facebook: Share on Facebook
+    share_on_twitter: Share on Twitter / X
+    share_on_linkedin: Share on LinkedIn
+    related_articles: Related articles
+    by_author: by
+    min_read: "%{minutes} min read"
+    previous_post: Previous post
+    next_post: Next post
+    more_posts: More posts

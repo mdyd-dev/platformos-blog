@@ -1,8 +1,7 @@
 ---
 name: instance_blog_edition
-redirect_to: 'blog'
+redirect_to: '/sessions/new'
 flash_alert: 'Please log in to access this page.'
 ---
-{% graphql g = "modules/blog/get_blog_user" %}
-{% if g.current_user != blank %}true{% endif %}
-
+{% function profile = 'modules/user/helpers/current_profile' %}
+{% if profile.user != blank %}true{% endif %}

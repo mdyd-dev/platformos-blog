@@ -28,8 +28,9 @@
 
   <div class="blog-post-card-body">
     {%- if post_item.tags.size > 0 -%}
+      {%- assign visible_tags = post_item.tags | slice: 0, 3 -%}
       <ul class="pos-tags-list">
-        {%- for post_tag in post_item.tags limit: 3 -%}
+        {%- for post_tag in visible_tags -%}
           <li><a class="pos-tag pos-tag-interactive" href="/blog/category/{{ post_tag | replace: ' ', '-' }}">{{ post_tag }}</a></li>
         {%- endfor -%}
       </ul>
@@ -55,7 +56,7 @@
         </li>
         <li>
           {% render 'modules/common-styling/icon', icon: 'clock', class: null %}
-          {{ read_minutes }} min read
+          {{ 'modules/blog/blog.min_read' | t: minutes: read_minutes }}
         </li>
       </ul>
       {{ post_item.author_name }}

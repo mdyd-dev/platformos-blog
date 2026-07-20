@@ -1,14 +1,21 @@
 ---
-slug: dashboard/users/edit
-layout_name: modules/dashboard/dashboard
+slug: 'dashboard/users/edit/:id'
+layout: modules/dashboard/dashboard
 authorization_policies:
 - "modules/dashboard/dashboard_access"
 ---
-{% graphql users = "modules/dashboard/get_users", id: params.slugs %}
-{% assign user_id = users.users.results.first.id %}
+{% liquid
+  graphql users = 'modules/dashboard/get_users', id: context.params.id
+  assign user = users.users.results.first
 
+  assign values = '{}' | parse_json
+  assign values = values | hash_add_key: 'first_name', user.first_name
+  assign values = values | hash_add_key: 'last_name', user.last_name
+  assign values = values | hash_add_key: 'email', user.email
+  assign values = values | hash_add_key: 'admin', user.dashboard.admin
+%}
 <div class="container pt-4">
   <div class="col-lg-6 col-md-8 col-sm-12 col-12">
-    {% include_form "modules/dashboard/user_form", id: user_id %}
+    {% render 'modules/dashboard/users/form', context: context, user_id: user.id, values: values, errors: null %}
   </div>
 </div>

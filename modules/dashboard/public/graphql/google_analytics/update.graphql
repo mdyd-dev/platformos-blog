@@ -1,0 +1,12 @@
+mutation dashboard_google_analytics_update($id: ID!, $tracking_id: String) {
+  record: record_update(
+    id: $id
+    record: {
+      table: "modules/dashboard/google_analytics"
+      properties: [{ name: "tracking_id", value: $tracking_id }]
+    }
+  ) {
+    id
+    tracking_id: property(name: "tracking_id")
+  }
+}

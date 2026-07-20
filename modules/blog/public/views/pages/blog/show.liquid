@@ -1,7 +1,7 @@
 ---
 slug: 'blog/post/:blog_slug/:post_slug'
 format: html
-layout_name: 'modules/blog/blog'
+layout: 'modules/blog/blog'
 ---
 {% liquid
   assign url = 'https://' | append: context.location.host | append: context.location.href
@@ -42,15 +42,15 @@ layout_name: 'modules/blog/blog'
     {%- capture post_meta -%}
       {%- assign author_avatar_path = blog_post.author_avatar.versions.thumb | default: blog_post.author_avatar.url -%}
       {% render 'modules/common-styling/user/avatar', size: 'md', name: blog_post.author_name, image_src: author_avatar_path, class: null %}
-      <span>by <b>{{ blog_post.author_name }}</b></span>
+      <span>{{ 'modules/blog/blog.by_author' | t }} <b>{{ blog_post.author_name }}</b></span>
       <span aria-hidden="true">&middot;</span>
       <time datetime="{{ blog_post.published_at | date: '%F' }}">{{ blog_post.published_at | date: '%b %-d, %Y' }}</time>
       <span aria-hidden="true">&middot;</span>
-      <span>{{ read_minutes }} min read</span>
+      <span>{{ 'modules/blog/blog.min_read' | t: minutes: read_minutes }}</span>
     {%- endcapture -%}
 
     {% assign image_url = blog_post.hero_image.versions.lg | default: blog_post.hero_image.url %}
-    {%- include 'modules/blog/blog/hero',
+    {%- render 'modules/blog/blog/hero',
       title: blog_post.title,
       subtitle: null,
       img_path: image_url,
@@ -77,10 +77,9 @@ layout_name: 'modules/blog/blog'
               </ul>
             {%- endif -%}
 
-            {% include 'modules/blog/blog/share-list',
-              title: 'Share',
-              text:  blog_post.title,
-              page_url: url
+            {% liquid
+              assign share_label = 'modules/blog/blog.share' | t
+              render 'modules/blog/blog/share-list', title: share_label, text: blog_post.title, page_url: url
             %}
 
           </footer>
@@ -98,13 +97,13 @@ layout_name: 'modules/blog/blog'
           </div>
         </div>
 
-        {%- include 'modules/blog/blog/siblings-nav',
+        {%- render 'modules/blog/blog/siblings-nav',
           previous_post: previous_post,
           next_post: next_post,
           blog_instance: blog_instance
         -%}
 
-        {%- include 'modules/blog/blog/comments',
+        {%- render 'modules/blog/blog/comments',
           page_url: url,
           facebook_app_id: blog_instance.facebook_app_id
         -%}
@@ -113,24 +112,32 @@ layout_name: 'modules/blog/blog'
 
     </div>
 
-    {%- include 'modules/blog/blog/posts-section',
-      section_title: 'Related articles',
-      related_posts: related_posts,
-      blog_instance: blog_instance
-    -%}
+    {% liquid
+      assign related_title = 'modules/blog/blog.related_articles' | t
+      render 'modules/blog/blog/posts-section', section_title: related_title, related_posts: related_posts, blog_instance: blog_instance
+    %}
 
-    {% assign user_id = blog_instance.user.id | plus: 0 %}
-    {%- if context.current_user.id == user_id -%}
-      {% assign edit_post_href = '/blog/posts/edit/' | append: blog_post.id %}
-      {%- include 'modules/blog/blog/flying-button',
-        btn_text: 'Edit post',
-        btn_href: edit_post_href,
-        btn_icon: 'pencil'
-      -%}
+    {% liquid
+      function profile = 'modules/user/helpers/current_profile'
+      assign owner_id = blog_instance.user.id | plus: 0
+      assign viewer_id = profile.user.id | plus: 0
+    %}
+    {%- if profile.user and viewer_id == owner_id -%}
+      {% liquid
+        assign edit_post_href = '/dashboard/posts/edit/' | append: blog_post.id
+        assign edit_post_label = 'modules/blog/blog.edit_post' | t
+        render 'modules/blog/blog/flying-button', btn_text: edit_post_label, btn_href: edit_post_href, btn_icon: 'pencil'
+      %}
     {%- endif -%}
   {%- else -%}
-    {%- include 'modules/blog/blog/hero', title: 'Blog post not found', subtitle: null, img_path: null, meta_html: null -%}
+    {%- liquid
+      assign not_found_title = 'modules/blog/blog.post_not_found' | t
+      render 'modules/blog/blog/hero', title: not_found_title, subtitle: null, img_path: null, meta_html: null
+    -%}
   {%- endif -%}
 {%- else -%}
-  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled', subtitle: null, img_path: null, meta_html: null -%}
+  {%- liquid
+    assign not_enabled_title = 'modules/blog/blog.not_enabled' | t
+    render 'modules/blog/blog/hero', title: not_enabled_title, subtitle: null, img_path: null, meta_html: null
+  -%}
 {%- endif -%}

@@ -1,0 +1,10 @@
+query users_for_profile_backfill {
+  users(per_page: 2000) {
+    results {
+      id
+      email
+      first_name
+      last_name
+    }
+  }
+}

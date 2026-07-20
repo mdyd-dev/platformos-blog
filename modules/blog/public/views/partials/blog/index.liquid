@@ -8,6 +8,9 @@
     slug                - blog slug (for the meta title)
     tags                - active category tags (string), or nil
     feature_post_first  - whether to feature the first post
+
+  Invoked with {% include %} (not render) because it writes the meta_title
+  content_for buffer consumed by the layout.
 {% endcomment %}
 {% if slug != blank and blog_instance %}
   {%- content_for 'meta_title' -%}
@@ -17,7 +20,7 @@
   {% liquid
     assign header_image_path = blog_instance.header_image.versions.hero | default: blog_instance.header_image.versions.normal | default: blog_instance.header_image.url
   %}
-  {%- include 'modules/blog/blog/hero',
+  {%- render 'modules/blog/blog/hero',
     title: blog_instance.title,
     subtitle: blog_instance.subtitle,
     img_path: header_image_path,
@@ -29,16 +32,16 @@
     <header class="blog-section-header">
       <h2 class="pos-heading-3 blog-section-title">
         {%- if tags -%}
-          Posts tagged &ldquo;{{ tags }}&rdquo;
+          {{ 'modules/blog/blog.posts_tagged' | t: tags: tags }}
         {%- else -%}
-          Latest articles
+          {{ 'modules/blog/blog.latest_articles' | t }}
         {%- endif -%}
       </h2>
 
       {%- if blog_instance.tags_filter.size > 0 -%}
-        <nav aria-label="Categories">
+        <nav aria-label="{{ 'modules/blog/blog.categories' | t }}">
           <ul class="pos-tags-list blog-tag-filter">
-            <li><a class="pos-tag pos-tag-interactive" href="/" {% unless tags %}aria-current="true"{% endunless %}>All</a></li>
+            <li><a class="pos-tag pos-tag-interactive" href="/" {% unless tags %}aria-current="true"{% endunless %}>{{ 'modules/blog/blog.all' | t }}</a></li>
             {%- for tag in blog_instance.tags_filter -%}
               <li>
                 <a class="pos-tag pos-tag-interactive" href="/blog/category/{{ tag | replace: ' ', '-' }}" {% if tags == tag %}aria-current="true"{% endif %}>
@@ -53,14 +56,14 @@
 
     {% if blog_posts.results.size == 0 %}
       <div class="pos-card pos-text-center">
-        <h3 class="pos-heading-4">Nothing here yet</h3>
+        <h3 class="pos-heading-4">{{ 'modules/blog/blog.nothing_here' | t }}</h3>
         <p class="pos-supplementary">
-          No posts matched your criteria.
-          <a href="/">Go back to the blog home page</a>
+          {{ 'modules/blog/blog.no_posts_matched' | t }}
+          <a href="/">{{ 'modules/blog/blog.back_home' | t }}</a>
         </p>
       </div>
     {% else %}
-      {%- include 'modules/blog/blog/posts-list',
+      {%- render 'modules/blog/blog/posts-list',
         feature_first: feature_post_first,
         posts: blog_posts.results,
         instance_slug: blog_instance.slug
@@ -73,14 +76,20 @@
 
   </div>
 
-  {% assign user_id = blog_instance.user.id | plus: 0 %}
-  {%- if context.current_user.id == user_id -%}
-    {%- include 'modules/blog/blog/flying-button',
-      btn_text: 'Blog settings',
-      btn_href: '/dashboard/blog/settings',
-      btn_icon: 'cog'
+  {% liquid
+    function profile = 'modules/user/helpers/current_profile'
+    assign owner_id = blog_instance.user.id | plus: 0
+    assign viewer_id = profile.user.id | plus: 0
+  %}
+  {%- if profile.user and viewer_id == owner_id -%}
+    {%- liquid
+      assign blog_settings_label = 'modules/blog/blog.blog_settings' | t
+      render 'modules/blog/blog/flying-button', btn_text: blog_settings_label, btn_href: '/dashboard/blog/settings', btn_icon: 'cog'
     -%}
   {%- endif -%}
 {% else %}
-  {%- include 'modules/blog/blog/hero', title: 'Blog is not enabled', subtitle: null, img_path: null, meta_html: null -%}
+  {%- liquid
+    assign not_enabled_title = 'modules/blog/blog.not_enabled' | t
+    render 'modules/blog/blog/hero', title: not_enabled_title, subtitle: null, img_path: null, meta_html: null
+  -%}
 {% endif %}

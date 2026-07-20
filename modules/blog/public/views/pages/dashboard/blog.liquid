@@ -1,39 +1,32 @@
 ---
 slug: 'dashboard/blog'
 format: html
-layout_name: 'modules/dashboard/dashboard'
+layout: 'modules/dashboard/dashboard'
 authorization_policies:
   - 'modules/blog/instance_blog_edition'
   - 'modules/dashboard/dashboard_access'
 ---
 {% include "modules/blog/blog/admin/commons" %}
-{% parse_json "_utils" %}
-  {% include 'modules/utils/init' %}
-{% endparse_json %}
+{% liquid
+  assign pagination_per_page = context.params.per_page | default: 15 | plus: 0
+  assign pagination_page = context.params.page | default: 1 | plus: 0
+%}
 
-{% assign pagination_per_page = params.per_page | default: 15 | plus: 0 %}
-{% assign pagination_page = params.page | default: 1 | plus: 0 %}
-
-{%- capture url_template -%}
-{% if params.language %}/{lang}{%- endif -%}/blog/admin/{slug}
-{%- endcapture -%}
-{% assign url_params = context.location.href | extract_url_params: url_template %}
-
-{%- include _utils.flash_messages -%}
+{% render 'modules/blog/layouts/blog/flash_messages', context: context %}
 {%- function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null -%}
 
-{%- function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: pagination_per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: params.tags, slug: null, published_at_lte: null, published_at_lt: null, published_at_gt: null, except_ids: null -%}
+{%- function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: pagination_per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: context.params.tags, slug: null, published_at_lte: null, published_at_lt: null, published_at_gt: null, except_ids: null -%}
 
-<a class="btn btn-info float-right" href="/">Back to Blog</a>
-{%- include 'modules/blog/blog/admin/navigation' -%}
+<a class="btn btn-info float-right" href="/">{{ 'modules/blog/admin.back_to_blog' | t }}</a>
+{%- render 'modules/blog/blog/admin/navigation' -%}
 <section class="o-section blog-admin">
   <div class="o-container">
     <table class="table table-borderless pb-5">
       <tr class="u-text-left">
-        <th>Title</th>
-        <th>Author</th>
-        <th>Published At</th>
-        <th>Actions</th>
+        <th>{{ 'modules/blog/admin.title' | t }}</th>
+        <th>{{ 'modules/blog/admin.author' | t }}</th>
+        <th>{{ 'modules/blog/admin.published_at' | t }}</th>
+        <th>{{ 'modules/blog/admin.actions' | t }}</th>
       </tr>
       {% for blog_post in blog_posts.results %}
         <tr data-tc="blog-post-row">
@@ -42,11 +35,11 @@ authorization_policies:
           <td>{{ blog_post.published_at | localize: 'long' }}</td>
           <td>
             <div class="btn-group" role="group" aria-label="Basic example">
-              <a href="/dashboard/posts/edit/{{ blog_post.id }}" class='btn btn-link' data-tc="blog-post-edit">Edit</a>
-              <form action="/dashboard/posts/{{ blog_post.id }}" method="post" class="d-inline" onsubmit="return confirm('You will delete this post permanently. Are you sure?');" data-tc="blog-post-delete-form">
+              <a href="/dashboard/posts/edit/{{ blog_post.id }}" class='btn btn-link' data-tc="blog-post-edit">{{ 'modules/blog/admin.edit' | t }}</a>
+              <form action="/dashboard/posts/{{ blog_post.id }}" method="post" class="d-inline" onsubmit="return confirm('{{ 'modules/blog/admin.delete_post_confirm' | t }}');" data-tc="blog-post-delete-form">
                 <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
                 <input type="hidden" name="_method" value="delete">
-                <button type="submit" class="btn btn-link" data-tc="blog-post-delete">Delete</button>
+                <button type="submit" class="btn btn-link" data-tc="blog-post-delete">{{ 'modules/blog/admin.delete' | t }}</button>
               </form>
             </div>
           </td>
@@ -55,7 +48,7 @@ authorization_policies:
     </table>
 
     <div class="mt-5">
-      {% include _utils.pagination, total_pages: blog_posts.total_pages, total_entries: blog_posts.total_entries, per_page: pagination_per_page, page: pagination_page %}
+      {% render 'modules/common-styling/pagination', total_pages: blog_posts.total_pages %}
     </div>
   </div>
 </section>

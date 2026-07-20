@@ -1,0 +1,56 @@
+{% assign pagination_per_page = context.params.per_page | default: 15 | plus: 0 %}
+{% assign pagination_page = context.params.page | default: 1 | plus: 0 %}
+{%
+  graphql users = "modules/dashboard/get_users",
+  per_page: pagination_per_page,
+  page: pagination_page
+%}
+<h2>Users List</h2>
+
+{% if context.flash.alert != blank %}
+  {% render 'modules/common-styling/content/alert', type: 'error', content: context.flash.alert %}
+{% endif %}
+{% if context.flash.notice != blank %}
+  {% render 'modules/common-styling/content/alert', type: 'success', content: context.flash.notice %}
+{% endif %}
+<div class="table-responsive">
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Actions</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users.users.results %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.first_name }}</td>
+          <td>{{ user.last_name }}</td>
+          <td>{{ user.email }} </td>
+          <td>{% if user.dashboard.admin == "true" %}Administrator{% else %}User{% endif %}</td>
+          <td>
+            <a class='btn btn-link' href="/dashboard/users/edit/{{ user.id }}">Edit</a>
+          </td>
+          <td>
+            <form action="/dashboard/users/delete" method="post" class="d-inline" onsubmit="return confirm('You will delete this user permanently. Are you sure?');">
+              <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+              <input type="hidden" name="id" value="{{ user.id }}">
+              <button type="submit" class="btn btn-link">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if users.users.total_pages > 1 %}
+    <nav aria-label="Users pagination" class="mt-5">
+      {% render 'modules/common-styling/pagination', total_pages: users.users.total_pages %}
+    </nav>
+  {% endif %}
+</div>

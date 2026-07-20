@@ -14,7 +14,7 @@
         assign featured_flag = true
       endif
     %}
-    {%- include 'modules/blog/blog/post',
+    {%- render 'modules/blog/blog/post',
       post_item: post,
       featured: featured_flag,
       slug: instance_slug

@@ -1,7 +1,7 @@
 ---
 slug: 'dashboard/posts/new'
 format: html
-layout_name: 'modules/dashboard/dashboard'
+layout: 'modules/dashboard/dashboard'
 authorization_policies:
   - 'modules/blog/instance_blog_edition'
   - 'modules/dashboard/dashboard_access'
@@ -9,5 +9,6 @@ authorization_policies:
 {% include 'modules/blog/blog/admin/form_assets' %}
 {% liquid
   assign object = '{}' | parse_json
-  render 'modules/blog/blog/admin/post_form_screen', object: object, errors: nil, action: '/dashboard/posts', http_method: 'post', submit_label: 'Create Post'
+  assign submit_label = 'modules/blog/admin.create_post' | t
+  render 'modules/blog/blog/admin/post_form_screen', object: object, errors: nil, action: '/dashboard/posts', http_method: 'post', submit_label: submit_label
 %}

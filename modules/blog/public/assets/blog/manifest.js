@@ -124,7 +124,7 @@
     /******/ script.src =
       __webpack_require__.p +
       '' +
-      ({'0': 'wysiwyg'}[chunkId] || chunkId) +
+      chunkId +
       '.' +
       {'0': 'b90'}[chunkId] +
       '.js';

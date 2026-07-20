@@ -1,0 +1,5 @@
+mutation dashboard_user_delete($id: ID!) {
+  user_delete(id: $id) {
+    id
+  }
+}

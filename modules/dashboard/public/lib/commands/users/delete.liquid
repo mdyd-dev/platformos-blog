@@ -1,0 +1,21 @@
+{% doc %}
+  @param {string} id - The user ID
+{% enddoc %}
+{% liquid
+  assign object = '{}' | parse_json
+  assign object = object | hash_add_key: 'id', id
+  assign object = object | hash_add_key: 'valid', true
+
+  if id == blank
+    assign object.valid = false
+    return object
+  endif
+
+  graphql result = 'modules/dashboard/users/delete', id: id
+  if result.errors
+    assign object.valid = false
+    assign object.errors = result.errors
+  endif
+
+  return object
+%}

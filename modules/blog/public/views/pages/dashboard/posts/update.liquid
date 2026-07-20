@@ -2,7 +2,7 @@
 slug: 'dashboard/posts/:id'
 method: put
 format: html
-layout_name: 'modules/dashboard/dashboard'
+layout: 'modules/dashboard/dashboard'
 authorization_policies:
   - 'modules/blog/instance_blog_edition'
   - 'modules/dashboard/dashboard_access'
@@ -17,6 +17,7 @@ authorization_policies:
     # platformos-check-enable DeprecatedTag
   else
     assign action = '/dashboard/posts/' | append: context.params.id
-    render 'modules/blog/blog/admin/post_form_screen', object: object, errors: object.errors, action: action, http_method: 'put', submit_label: 'Update Post'
+    assign submit_label = 'modules/blog/admin.update_post' | t
+    render 'modules/blog/blog/admin/post_form_screen', object: object, errors: object.errors, action: action, http_method: 'put', submit_label: submit_label
   endif
 %}

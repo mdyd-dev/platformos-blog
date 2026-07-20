@@ -1,0 +1,19 @@
+---
+slug: dashboard/users/delete
+method: post
+authorization_policies:
+- "modules/dashboard/dashboard_access"
+---
+{% liquid
+  function object = 'modules/dashboard/commands/users/delete', id: context.params.id
+
+  if object.valid
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/users', notice: "You've successfully deleted user", default: null, error: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  else
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/users', error: "User could not be deleted", default: null, notice: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  endif
+%}

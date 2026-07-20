@@ -2,7 +2,7 @@
 slug: 'dashboard/posts'
 method: post
 format: html
-layout_name: 'modules/dashboard/dashboard'
+layout: 'modules/dashboard/dashboard'
 authorization_policies:
   - 'modules/blog/instance_blog_edition'
   - 'modules/dashboard/dashboard_access'
@@ -15,6 +15,7 @@ authorization_policies:
     include 'modules/core/helpers/redirect_to', url: '/dashboard/blog', notice: 'Post has been successfully created', default: null, error: null, format: null, info: null, object: null
     # platformos-check-enable DeprecatedTag
   else
-    render 'modules/blog/blog/admin/post_form_screen', object: object, errors: object.errors, action: '/dashboard/posts', http_method: 'post', submit_label: 'Create Post'
+    assign submit_label = 'modules/blog/admin.create_post' | t
+    render 'modules/blog/blog/admin/post_form_screen', object: object, errors: object.errors, action: '/dashboard/posts', http_method: 'post', submit_label: submit_label
   endif
 %}

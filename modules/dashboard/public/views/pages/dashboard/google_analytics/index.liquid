@@ -1,22 +1,23 @@
 ---
 slug: dashboard/google_analytics
-layout_name: modules/dashboard/dashboard
+layout: modules/dashboard/dashboard
 authorization_policies:
 - "modules/dashboard/dashboard_access"
 ---
 {% graphql ga = "modules/dashboard/get_google_analytics" %}
-{% assign ga_id = ga.customizations.results.last.id %}
+{% assign ga_record = ga.customizations.results.last %}
 <div class="pt-4">
   <div class="col-lg-6 col-md-8 col-sm-12 col-12">
-    {%
-      include_form "modules/dashboard/google_analytics_form",
-      id: ga_id
-    %}
-    {% if ga_id != blank and false %}
-      {%
-        include_form "modules/dashboard/delete_google_analytics_form",
-        id: ga_id
-      %}
-    {% endif %}
+    <form action="/dashboard/google_analytics" method="post">
+      <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+      {% if ga_record %}
+        <input type="hidden" name="id" value="{{ ga_record.id }}">
+      {% endif %}
+      <div class="form-group">
+        <label for="form-tracking-id">Tracking ID</label>
+        <input type="text" class="form-control" name="tracking_id" id="form-tracking-id" value="{{ ga_record.tracking_id }}">
+      </div>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </form>
   </div>
 </div>

@@ -6,7 +6,7 @@
 <footer class="blog-footer">
   <div class="blog-container blog-footer-inner">
     <div>
-      © {{ current_year }} {{ footer_title }} — powered by
+      © {{ current_year }} {{ footer_title }} — {{ 'modules/blog/layout.powered_by' | t }}
       <a href="https://www.platformos.com" target="_blank" rel="noopener">platformOS</a>
     </div>
 
@@ -35,9 +35,9 @@
           <span class="pos-label">LinkedIn</span>
         </a></li>
       {% endif %}
-      <li><a href="/blog/rss.rss" title="RSS feed">
+      <li><a href="/blog/rss.rss" title="{{ 'modules/blog/layout.rss_feed' | t }}">
         <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-feed"></use></svg>
-        <span class="pos-label">RSS feed</span>
+        <span class="pos-label">{{ 'modules/blog/layout.rss_feed' | t }}</span>
       </a></li>
     </ul>
   </div>

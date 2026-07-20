@@ -1,0 +1,25 @@
+mutation dashboard_user_update(
+  $id: ID!
+  $first_name: String!
+  $last_name: String!
+  $email: String!
+  $admin: String!
+) {
+  user_update(
+    id: $id
+    user: {
+      first_name: $first_name
+      last_name: $last_name
+      email: $email
+      profiles: [
+        {
+          name: "modules/dashboard/dashboard"
+          values: { properties: [{ name: "admin", value: $admin }] }
+        }
+      ]
+    }
+  ) {
+    id
+    email
+  }
+}

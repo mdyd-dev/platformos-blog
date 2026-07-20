@@ -1,0 +1,13 @@
+en:
+  auth:
+    log_in: Log In
+    log_out: Log Out
+    email: Email
+    first_name: First name
+    last_name: Last name
+    edit_profile: Edit Profile
+    save_profile: Save
+    email_locked: The email address cannot be changed here.
+    logged_out: You've successfully logged out
+    profile_updated: You've successfully edited your profile
+    log_in_to_continue: Please log in to access this page.

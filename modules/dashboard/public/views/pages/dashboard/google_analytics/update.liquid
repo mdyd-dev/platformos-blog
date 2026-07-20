@@ -1,0 +1,19 @@
+---
+slug: dashboard/google_analytics
+method: post
+authorization_policies:
+- "modules/dashboard/dashboard_access"
+---
+{% liquid
+  function object = 'modules/dashboard/commands/google_analytics/set', id: context.params.id, tracking_id: context.params.tracking_id
+
+  if object.valid
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/google_analytics', notice: "You've successfully set Google Analytics", default: null, error: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  else
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/google_analytics', error: "Google Analytics settings could not be saved", default: null, notice: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  endif
+%}

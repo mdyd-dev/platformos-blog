@@ -13,7 +13,8 @@
 {% enddoc %}
 {% liquid
   assign http_method = http_method | default: 'post'
-  assign submit_label = submit_label | default: 'Save'
+  assign default_submit_label = 'modules/blog/admin.save' | t
+  assign submit_label = submit_label | default: default_submit_label
   assign tags_value = object.tags | join: ', '
   assign published_at_value = object.published_at | date: '%Y-%m-%d'
 
@@ -51,25 +52,25 @@
 
       <div class="col-lg-8 col-md-12 col-sm-12 col-12">
         <div class="form-group">
-          <label for="blog-post-title">Title</label>
+          <label for="blog-post-title">{{ 'modules/blog/admin.title' | t }}</label>
           <input type="text" class="form-control" id="blog-post-title" name="blog_post[title]" value="{{ object.title }}" data-tc="blog-post-title"{% render 'modules/common-styling/forms/error_input_handler', name: 'title', errors: errors.title %}>
           {% render 'modules/common-styling/forms/error_list', name: 'title', errors: errors.title %}
         </div>
 
         <div class="form-group">
-          <label for="blog-post-published-at">Publish At</label>
+          <label for="blog-post-published-at">{{ 'modules/blog/admin.publish_at' | t }}</label>
           <input type="date" class="form-control" id="blog-post-published-at" name="blog_post[published_at]" value="{{ published_at_value }}" placeholder="yyyy-mm-dd" data-tc="blog-post-published-at">
         </div>
 
         <div class="form-group">
           <label class="switch">
             <input type="checkbox" id="blog-post-publish-now" name="blog_post[publish_now]" value="1"{% if publish_now_checked %} checked{% endif %} data-tc="blog-post-publish-now">
-            Publish Now
+            {{ 'modules/blog/admin.publish_now' | t }}
           </label>
         </div>
 
         <div class="form-group">
-          <label>Hero Image</label>
+          <label>{{ 'modules/blog/admin.hero_image' | t }}</label>
           {% render 'modules/common-styling/forms/upload',
             id: 'blog-post-hero-image',
             name: 'blog_post[hero_image]',
@@ -83,7 +84,7 @@
         </div>
 
         <div class="form-group">
-          <label for="blog-post-content">Content</label>
+          <label for="blog-post-content">{{ 'modules/blog/admin.content' | t }}</label>
           {% render 'modules/common-styling/forms/markdown',
             id: 'blog-post-content',
             name: 'blog_post[content]',
@@ -96,13 +97,13 @@
         </div>
 
         <div class="form-group">
-          <label for="blog-post-excerpt">Excerpt</label>
+          <label for="blog-post-excerpt">{{ 'modules/blog/admin.excerpt' | t }}</label>
           <textarea class="form-control" id="blog-post-excerpt" name="blog_post[excerpt]" rows="5" data-tc="blog-post-excerpt"{% render 'modules/common-styling/forms/error_input_handler', name: 'excerpt', errors: errors.excerpt %}>{{ object.excerpt }}</textarea>
           {% render 'modules/common-styling/forms/error_list', name: 'excerpt', errors: errors.excerpt %}
         </div>
 
         <div class="form-group">
-          <label>Author Avatar</label>
+          <label>{{ 'modules/blog/admin.author_avatar' | t }}</label>
           {% render 'modules/common-styling/forms/upload',
             id: 'blog-post-author-avatar',
             name: 'blog_post[author_avatar]',
@@ -116,19 +117,19 @@
         </div>
 
         <div class="form-group">
-          <label for="blog-post-author-name">Author Name</label>
+          <label for="blog-post-author-name">{{ 'modules/blog/admin.author_name' | t }}</label>
           <input type="text" class="form-control" id="blog-post-author-name" name="blog_post[author_name]" value="{{ object.author_name }}" data-tc="blog-post-author-name"{% render 'modules/common-styling/forms/error_input_handler', name: 'author_name', errors: errors.author_name %}>
           {% render 'modules/common-styling/forms/error_list', name: 'author_name', errors: errors.author_name %}
         </div>
 
         <div class="form-group">
-          <label for="blog-post-author-biography">Author Biography</label>
+          <label for="blog-post-author-biography">{{ 'modules/blog/admin.author_biography' | t }}</label>
           <input type="text" class="form-control" id="blog-post-author-biography" name="blog_post[author_biography]" value="{{ object.author_biography }}" data-tc="blog-post-author-biography">
         </div>
 
         <div class="form-group">
-          <label for="blog-post-tags">Tags</label>
-          <input type="text" class="form-control" id="blog-post-tags" name="blog_post[tags]" value="{{ tags_value }}" placeholder="Tags separated with comma" data-tc="blog-post-tags">
+          <label for="blog-post-tags">{{ 'modules/blog/admin.tags' | t }}</label>
+          <input type="text" class="form-control" id="blog-post-tags" name="blog_post[tags]" value="{{ tags_value }}" placeholder="{{ 'modules/blog/admin.tags_placeholder' | t }}" data-tc="blog-post-tags">
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg" data-tc="blog-post-submit">{{ submit_label }}</button>

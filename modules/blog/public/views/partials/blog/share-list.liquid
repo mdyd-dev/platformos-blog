@@ -15,21 +15,21 @@
 
   <ul class="blog-share-list">
     <li>
-      <a href="https://www.facebook.com/sharer.php?u={{ page_url_encode }}" target="_blank" rel="noopener" title="Share on Facebook">
+      <a href="https://www.facebook.com/sharer.php?u={{ page_url_encode }}" target="_blank" rel="noopener" title="{{ 'modules/blog/blog.share_on_facebook' | t }}">
         <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-facebook"></use></svg>
-        <span class="pos-label">Share on Facebook</span>
+        <span class="pos-label">{{ 'modules/blog/blog.share_on_facebook' | t }}</span>
       </a>
     </li>
     <li>
-      <a href="https://twitter.com/share?text={{ text | url_encode }}&url={{ page_url_encode }}" target="_blank" rel="noopener" title="Share on Twitter / X">
+      <a href="https://twitter.com/share?text={{ text | url_encode }}&url={{ page_url_encode }}" target="_blank" rel="noopener" title="{{ 'modules/blog/blog.share_on_twitter' | t }}">
         <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-twitter"></use></svg>
-        <span class="pos-label">Share on Twitter / X</span>
+        <span class="pos-label">{{ 'modules/blog/blog.share_on_twitter' | t }}</span>
       </a>
     </li>
     <li>
-      <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ page_url_encode }}" target="_blank" rel="noopener" title="Share on LinkedIn">
+      <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ page_url_encode }}" target="_blank" rel="noopener" title="{{ 'modules/blog/blog.share_on_linkedin' | t }}">
         <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-linkedin"></use></svg>
-        <span class="pos-label">Share on LinkedIn</span>
+        <span class="pos-label">{{ 'modules/blog/blog.share_on_linkedin' | t }}</span>
       </a>
     </li>
   </ul>

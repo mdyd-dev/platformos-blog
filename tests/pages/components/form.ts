@@ -58,7 +58,15 @@ export abstract class Form<TData extends Record<string, any>> {
           break;
         case 'radio':
         case 'checkbox':
-          await fieldLocator.check();
+          if (!(await fieldLocator.isChecked())) {
+            try {
+              await fieldLocator.check({ timeout: 2000 });
+            } catch {
+              // styled switches wrap the input in a covering <label> that
+              // intercepts pointer events — toggle through the label instead
+              await fieldLocator.locator('xpath=ancestor::label[1]').click();
+            }
+          }
           break;
       }
     }
