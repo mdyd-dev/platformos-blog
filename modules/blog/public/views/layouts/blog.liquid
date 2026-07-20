@@ -1,7 +1,5 @@
 {%- liquid
   function current_profile = 'modules/user/helpers/current_profile'
-  graphql ga = 'modules/dashboard/get_google_analytics'
-  assign ga_tracking_id = ga.customizations.results.last.tracking_id
 -%}
 <!DOCTYPE html>
 <html lang="en" class="pos-app pos-theme-darkEnabled">
@@ -13,7 +11,6 @@
   {%- render 'modules/blog/layouts/blog/stylesheets' -%}
   {%- include 'modules/blog/layouts/blog/page-title' -%}
   {%- include 'modules/blog/layouts/blog/page-description' -%}
-  {%- render 'modules/blog/layouts/blog/google_analytics', tracking_id: ga_tracking_id -%}
 
   {% yield 'head_content' %}
 </head>

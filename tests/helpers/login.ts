@@ -3,8 +3,8 @@ import process from 'process';
 
 /**
  * Logs in an admin user so the dashboard (/dashboard/blog*) pages — which are
- * behind the `dashboard_access` / `instance_blog_edition` policies — can be
- * exercised by the posts/admin specs.
+ * behind the `blog.manage` permission (blog_manager role, task 1.8) — can be
+ * exercised by the posts/admin/managers specs.
  *
  * Uses the pos-module-user built-in /sessions/new page (task 1.5). A successful
  * login redirects to the homepage, where the header shows the user widget.

@@ -35,3 +35,16 @@ en:
     twitter_link: Twitter Link
     linkedin_link: LinkedIn Link
     instagram_link: Instagram Link
+    admin_title: Blog Admin
+    blog: Blog
+    managers: Managers
+    manager_badge: Manager
+    manager_name: Name
+    manager_email: Email
+    manager_role: Role
+    grant_manager: Make manager
+    revoke_manager: Revoke access
+    manager_granted: Blog manager access granted
+    manager_revoked: Blog manager access revoked
+    manager_profile_not_found: Could not find that user's profile
+    manager_cannot_revoke_self: You cannot revoke your own manager access

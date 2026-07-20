@@ -61,5 +61,10 @@ export default defineConfig({
       testMatch: /admin\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'managers',
+      testMatch: /managers\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
   ],
 });

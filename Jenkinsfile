@@ -8,6 +8,9 @@ pipeline {
   environment {
     MPKIT_TOKEN = credentials('POS_TOKEN')
     MPKIT_EMAIL = "darek+ci@near-me.com"
+    // Optional: set to run the authenticated posts/admin/managers suites.
+    // Without it those specs skip and only home/auth/managers-anonymous run.
+    // E2E_TEST_PASSWORD = credentials('BLOG_E2E_PASSWORD')
     CI = true
   }
 
@@ -17,7 +20,7 @@ pipeline {
 
   options {
     disableConcurrentBuilds()
-    timeout(time: 10, unit: 'MINUTES')
+    timeout(time: 15, unit: 'MINUTES')
     buildDiscarder(logRotator(daysToKeepStr: '1', artifactDaysToKeepStr: '1'))
   }
 
@@ -25,7 +28,7 @@ pipeline {
     stage('Install dependencies') {
       when { branch 'master' }
 
-      agent { docker { image 'node:12-alpine'; args '-u root' } }
+      agent { docker { image 'node:20-alpine'; args '-u root' } }
 
       steps {
         sh 'npm ci'
@@ -46,12 +49,12 @@ pipeline {
 
     stage('Test on URL') {
       when { expression { return !params.MP_URL.isEmpty() } }
-      agent { docker { image "platformos/testcafe" } }
-      environment { MP_URL = "${params.MP_URL}" }
+      agent { docker { image 'mcr.microsoft.com/playwright:v1.52.0-noble'; args '-u root' } }
+      environment { MPKIT_URL = "${params.MP_URL}" }
       steps {
-        sh 'npm run test-ci'
+        sh 'npm ci && npm run test-ci'
       }
-      post { failure { archiveArtifacts "screenshots/" } }
+      post { failure { archiveArtifacts artifacts: "playwright-report/**, test-results/**", allowEmptyArchive: true } }
     }
 
     stage('Deploy STG') {
@@ -79,15 +82,15 @@ pipeline {
       }
 
       environment {
-        MP_URL = "${staging_url}"
+        MPKIT_URL = "${staging_url}"
       }
 
-      agent { docker { image "platformos/testcafe" } }
+      agent { docker { image 'mcr.microsoft.com/playwright:v1.52.0-noble'; args '-u root' } }
 
       steps {
-        sh 'npm run test-ci'
+        sh 'npm ci && npm run test-ci'
       }
-      post { failure { archiveArtifacts "screenshots/" } }
+      post { failure { archiveArtifacts artifacts: "playwright-report/**, test-results/**", allowEmptyArchive: true } }
     }
   }
 

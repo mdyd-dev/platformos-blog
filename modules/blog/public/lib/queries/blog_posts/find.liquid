@@ -12,5 +12,5 @@
     return nil
   endif
   graphql res = 'modules/blog/blog_posts/search', id: id, per_page: 1, page: 1
-  return res.customizations.results.first
+  return res.records.results.first
 %}

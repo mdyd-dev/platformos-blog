@@ -2,13 +2,14 @@
 slug: 'dashboard/posts'
 method: post
 format: html
-layout: 'modules/dashboard/dashboard'
-authorization_policies:
-  - 'modules/blog/instance_blog_edition'
-  - 'modules/dashboard/dashboard_access'
+layout: 'modules/blog/admin'
 ---
-{% include 'modules/blog/blog/admin/form_assets' %}
 {% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
   function object = 'modules/blog/commands/blog_posts/create', object: context.params.blog_post
   if object.valid
     # platformos-check-disable DeprecatedTag

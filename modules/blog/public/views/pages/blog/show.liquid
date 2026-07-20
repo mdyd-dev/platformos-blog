@@ -119,10 +119,9 @@ layout: 'modules/blog/blog'
 
     {% liquid
       function profile = 'modules/user/helpers/current_profile'
-      assign owner_id = blog_instance.user.id | plus: 0
-      assign viewer_id = profile.user.id | plus: 0
+      function can_manage = 'modules/user/helpers/can_do', requester: profile, do: 'blog.manage', entity: null, access_callback: null
     %}
-    {%- if profile.user and viewer_id == owner_id -%}
+    {%- if can_manage -%}
       {% liquid
         assign edit_post_href = '/dashboard/posts/edit/' | append: blog_post.id
         assign edit_post_label = 'modules/blog/blog.edit_post' | t

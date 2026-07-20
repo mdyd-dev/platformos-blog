@@ -1,0 +1,29 @@
+{% comment %}
+  Blog admin layout (replaces the removed dashboard module's bootstrap layout).
+  Uses the blog module's own admin stylesheets plus common-styling components.
+{% endcomment %}
+{%- liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+-%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {%- capture meta_title %}{%- yield 'meta_title' -%}{%- endcapture -%}
+  <title>{% if meta_title != blank %}{{ meta_title }} | {% endif %}{{ 'modules/blog/admin.admin_title' | t }}</title>
+  {% render 'modules/common-styling/init', reset: false %}
+  {% render 'modules/blog/layouts/admin-blog/stylesheets' %}
+  {% render 'modules/blog/layouts/admin-blog/javascripts' %}
+  {% yield 'head_content' %}
+</head>
+
+<body>
+  {% render 'modules/blog/layouts/admin-blog/header', context: context, profile: current_profile %}
+
+  <main role="main" class="o-container px-4">
+    {% render 'modules/blog/layouts/blog/flash_messages', context: context %}
+    {{ content_for_layout }}
+  </main>
+</body>
+</html>

@@ -9,4 +9,7 @@
   <li class="nav-item">
     <a class="nav-link  {% if context.location.href  == '/dashboard/blog/settings' %}active{% endif %}" href="/dashboard/blog/settings">{{ 'modules/blog/admin.blog_settings' | t }}</a>
   </li>
+  <li class="nav-item">
+    <a class="nav-link {% if context.location.href  == '/dashboard/managers' %}active{% endif %}" href="/dashboard/managers">{{ 'modules/blog/admin.managers' | t }}</a>
+  </li>
 </ul>

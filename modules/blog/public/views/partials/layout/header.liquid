@@ -5,6 +5,7 @@
 {% liquid
   function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: true
   assign brand_title = blog_instance.title | default: 'Blog'
+  function can_manage = 'modules/user/helpers/can_do', requester: profile, do: 'blog.manage', entity: null, access_callback: null
 %}
 <header class="blog-header">
   <div class="blog-container blog-header-inner">
@@ -21,7 +22,9 @@
 
       {% if profile.user %}
         <a class="blog-header-user" href="/edit-profile" title="{{ 'modules/blog/auth.edit_profile' | t }}" data-tc="header-user">{{ profile.first_name | default: profile.user.email }}</a>
-        <a class="pos-button pos-button-small pos-button-primary" href="/dashboard/blog">{{ 'modules/blog/layout.dashboard' | t }}</a>
+        {% if can_manage %}
+          <a class="pos-button pos-button-small pos-button-primary" href="/dashboard/blog">{{ 'modules/blog/layout.dashboard' | t }}</a>
+        {% endif %}
         <form action="/log-out" method="post" class="blog-header-logout" data-tc="log-out-form">
           <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
           <button type="submit" class="pos-button pos-button-small">{{ 'modules/blog/auth.log_out' | t }}</button>

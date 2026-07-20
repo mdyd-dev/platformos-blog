@@ -1,0 +1,18 @@
+---
+slug: 'dashboard/managers'
+format: html
+layout: 'modules/blog/admin'
+---
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
+  assign page_number = context.params.page | default: 1 | plus: 0
+  function profiles = 'modules/user/queries/profiles/search', limit: 50, page: page_number, id: null, ids: null, uuid: null, user_id: null, first_name: null, last_name: null, not_ids: null, query: null, emails: null, sort: null
+%}
+{% content_for 'meta_title' %}{{ 'modules/blog/admin.managers' | t }}{% endcontent_for %}
+<a class="btn btn-info float-right" href="/">{{ 'modules/blog/admin.back_to_blog' | t }}</a>
+{% render 'modules/blog/blog/admin/navigation' %}
+{% render 'modules/blog/blog/admin/managers', context: context, profiles: profiles, current_user_id: current_profile.user.id %}

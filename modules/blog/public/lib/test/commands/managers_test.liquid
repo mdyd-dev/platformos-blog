@@ -1,0 +1,59 @@
+{% comment %}
+  Unit tests for the blog.manage grant/revoke commands (task 1.8).
+  Covers: granting to a non-existent user, the grant/revoke happy path against
+  a scratch user's profile roles, and idempotent re-grant / re-revoke no-ops.
+{% endcomment %}
+{% liquid
+  # --- granting to a non-existent user is rejected ---
+  function missing = 'modules/blog/commands/managers/grant', user_id: '999999999'
+  function contract = 'modules/tests/assertions/invalid_object', contract: contract, object: missing, field_name: 'grant_missing_user_rejected'
+
+  function missing_revoke = 'modules/blog/commands/managers/revoke', user_id: '999999999'
+  function contract = 'modules/tests/assertions/invalid_object', contract: contract, object: missing_revoke, field_name: 'revoke_missing_user_rejected'
+
+  # --- grant + revoke happy path on a scratch user ---
+  assign suffix = 'now' | date: '%s%L'
+  assign email = 'manager-test-' | append: suffix | append: '@example.com'
+  function created = 'modules/user/commands/user/create', first_name: 'Manager', last_name: 'Tester', email: email, password: 'Password123!', hook_params: null, roles: null
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'id', object: created
+
+  function granted = 'modules/blog/commands/managers/grant', user_id: created.id
+  function contract = 'modules/tests/assertions/valid_object', contract: contract, object: granted, field_name: 'grant_valid'
+
+  function profile = 'modules/user/queries/profiles/find', user_id: created.id, id: null, uuid: null, first_name: null, last_name: null
+  assign has_role = false
+  if profile.roles contains 'blog_manager'
+    assign has_role = true
+  endif
+  function contract = 'modules/tests/assertions/true', contract: contract, value: has_role, field_name: 'role_appended', object: null
+
+  # --- re-granting is a valid no-op ---
+  function regrant = 'modules/blog/commands/managers/grant', user_id: created.id
+  function contract = 'modules/tests/assertions/valid_object', contract: contract, object: regrant, field_name: 'regrant_valid'
+  function contract = 'modules/tests/assertions/true', contract: contract, value: regrant.noop, field_name: 'regrant_noop', object: null
+
+  # --- revoke removes the role ---
+  function revoked = 'modules/blog/commands/managers/revoke', user_id: created.id
+  function contract = 'modules/tests/assertions/valid_object', contract: contract, object: revoked, field_name: 'revoke_valid'
+
+  function profile_after = 'modules/user/queries/profiles/find', user_id: created.id, id: null, uuid: null, first_name: null, last_name: null
+  assign still_has_role = false
+  if profile_after.roles contains 'blog_manager'
+    assign still_has_role = true
+  endif
+  function contract = 'modules/tests/assertions/not_true', contract: contract, value: still_has_role, field_name: 'role_removed', object: null
+
+  # --- revoking a user who lacks the role is a valid no-op ---
+  function rerevoke = 'modules/blog/commands/managers/revoke', user_id: created.id
+  function contract = 'modules/tests/assertions/valid_object', contract: contract, object: rerevoke, field_name: 'rerevoke_valid'
+  function contract = 'modules/tests/assertions/true', contract: contract, value: rerevoke.noop, field_name: 'rerevoke_noop', object: null
+
+  # --- cleanup ---
+  if profile.id
+    assign delete_object = '{}' | parse_json | hash_add_key: 'id', profile.id
+    function _profile_cleanup = 'modules/user/commands/profiles/delete', object: delete_object
+  endif
+  if created.id
+    graphql _cleanup = 'modules/blog/test/user_delete', id: created.id
+  endif
+%}

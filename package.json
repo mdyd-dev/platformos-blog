@@ -7,10 +7,12 @@
   },
   "scripts": {
     "test": "playwright test",
+    "test-ci": "playwright test",
     "test:home": "playwright test --project=home",
     "test:auth": "playwright test --project=auth",
     "test:posts": "playwright test --project=posts",
     "test:admin": "playwright test --project=admin",
+    "test:managers": "playwright test --project=managers",
     "deploy:dev": "pos-cli deploy dev",
     "check": "pos-cli check run"
   },

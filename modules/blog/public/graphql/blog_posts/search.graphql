@@ -12,7 +12,7 @@ query search(
   $blog_instance_id: String
   $except_ids: [ID!]
 ) {
-  customizations: records(
+  records: records(
     per_page: $per_page
     page: $page
     sort: { properties: [{ name: "published_at", order: DESC }] }

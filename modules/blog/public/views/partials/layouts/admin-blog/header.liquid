@@ -1,5 +1,16 @@
+{% doc %}
+  @param {object} context - The request context (CSRF token for the log-out form)
+  @param {object} profile - The current profile from 'modules/user/helpers/current_profile'
+{% enddoc %}
 <div class="c-header pl-5">
-  <div class="c-header__container o-container">
-    <a class="c-header__description" href="/">Blog</a>
+  <div class="c-header__container o-container" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+    <a class="c-header__description" href="/">{{ 'modules/blog/admin.blog' | t }}</a>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="/edit-profile" title="{{ 'modules/blog/auth.edit_profile' | t }}" data-tc="admin-header-user">{{ profile.first_name | default: profile.user.email }}</a>
+      <form action="/log-out" method="post">
+        <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+        <button type="submit" class="btn btn-info">{{ 'modules/blog/auth.log_out' | t }}</button>
+      </form>
+    </div>
   </div>
 </div>

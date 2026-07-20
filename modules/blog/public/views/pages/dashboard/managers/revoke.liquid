@@ -1,0 +1,31 @@
+---
+slug: 'dashboard/managers/revoke'
+method: post
+---
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
+  if context.params.user_id == current_profile.user.id
+    assign error = 'modules/blog/admin.manager_cannot_revoke_self' | t
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/managers', error: error, default: null, notice: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  endif
+
+  function object = 'modules/blog/commands/managers/revoke', user_id: context.params.user_id
+
+  if object.valid
+    assign notice = 'modules/blog/admin.manager_revoked' | t
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/managers', notice: notice, default: null, error: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  else
+    assign error = 'modules/blog/admin.manager_profile_not_found' | t
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/managers', error: error, default: null, notice: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  endif
+%}

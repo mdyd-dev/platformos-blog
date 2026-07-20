@@ -2,13 +2,14 @@
 slug: 'dashboard/blog/settings'
 method: put
 format: html
-layout: 'modules/dashboard/dashboard'
-authorization_policies:
-  - 'modules/blog/instance_blog_edition'
-  - 'modules/dashboard/dashboard_access'
+layout: 'modules/blog/admin'
 ---
-{% include 'modules/blog/blog/admin/form_assets' %}
 {% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
   function blog = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null
   assign settings_params = context.params.blog_instance | hash_add_key: 'id', blog.id
   function object = 'modules/blog/commands/blog_instances/update', object: settings_params

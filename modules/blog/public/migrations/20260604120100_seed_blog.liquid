@@ -19,7 +19,6 @@
     No header_image seeded on purpose — without one the hero renders the
     platformOS brand gradient; admins can upload their own in Blog Settings.
   {% endcomment %}
-  {% assign now_epoch = 'now' | date: '%s' | plus: 0 %}
   {% parse_json instance_properties %}
   [
     { "name": "title", "value": "PlatformOS Blog" },
@@ -36,6 +35,18 @@
   {% if gi.errors %}
     {% log gi, type: log_type %}
   {% endif %}
+
+  {% comment %}
+    Post hero/author images are fetched by remote_url when the value_upload
+    properties below are saved. On a fresh deploy this migration can run
+    before the module's own assets are actually live on the CDN, so
+    record_create would 404. Defer post creation to a background job so its
+    automatic retries (max_attempts) absorb that race instead of crashing
+    the migration.
+  {% endcomment %}
+  {% background delay: 0.1, max_attempts: 5, source_name: 'modules/blog/seed_blog_posts', blog_instance_id: gi.record.id %}
+  {% assign log_type = 'modules/blog/seed_blog' %}
+  {% assign now_epoch = 'now' | date: '%s' | plus: 0 %}
 
   {% comment %} ------------------------------------------------ post 1 {% endcomment %}
   {% capture post_content %}
@@ -83,7 +94,7 @@ You have created your first post. You can now delete or unpublish the sample pos
     { "name": "author_name", "value": "platformOS Team" },
     { "name": "author_biography", "value": "Creators of the platformOS Blog Module" },
     { "name": "published_at", "value": {{ published_at | json }} },
-    { "name": "blog_instance_id", "value": {{ gi.record.id | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
     { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } },
     { "name": "author_avatar", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ author_avatar_url | json }} } }
   ]
@@ -126,7 +137,7 @@ Because everything is driven by design tokens, rebranding the blog usually means
     { "name": "author_name", "value": "platformOS Design Team" },
     { "name": "author_biography", "value": "The people behind the common-styling design system" },
     { "name": "published_at", "value": {{ published_at | json }} },
-    { "name": "blog_instance_id", "value": {{ gi.record.id | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
     { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } }
   ]
   {% endparse_json %}
@@ -180,7 +191,7 @@ That is genuinely all you need to publish well-formatted articles. Open this pos
     { "name": "author_name", "value": "platformOS Docs Team" },
     { "name": "author_biography", "value": "We write the words so you can write yours" },
     { "name": "published_at", "value": {{ published_at | json }} },
-    { "name": "blog_instance_id", "value": {{ gi.record.id | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
     { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } }
   ]
   {% endparse_json %}
@@ -220,7 +231,7 @@ The chips at the top of the post list come straight from your settings, so the n
     { "name": "author_name", "value": "platformOS Docs Team" },
     { "name": "author_biography", "value": "We write the words so you can write yours" },
     { "name": "published_at", "value": {{ published_at | json }} },
-    { "name": "blog_instance_id", "value": {{ gi.record.id | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
     { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } }
   ]
   {% endparse_json %}
@@ -263,7 +274,7 @@ Change a setting, refresh the home page, and you will see the effect immediately
     { "name": "author_name", "value": "platformOS Engineering" },
     { "name": "author_biography", "value": "Building the platform under your platform" },
     { "name": "published_at", "value": {{ published_at | json }} },
-    { "name": "blog_instance_id", "value": {{ gi.record.id | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
     { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } }
   ]
   {% endparse_json %}
@@ -309,7 +320,7 @@ That is the whole launch. Write the next post — that is the part only you can 
     { "name": "author_name", "value": "platformOS Team" },
     { "name": "author_biography", "value": "Creators of the platformOS Blog Module" },
     { "name": "published_at", "value": {{ published_at | json }} },
-    { "name": "blog_instance_id", "value": {{ gi.record.id | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
     { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } },
     { "name": "author_avatar", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ author_avatar_url | json }} } }
   ]
@@ -320,4 +331,5 @@ That is the whole launch. Write the next post — that is the part only you can 
   {% endif %}
 
   {% log 'Seeded default blog_instance and sample posts', type: log_type %}
+  {% endbackground %}
 {% endif %}

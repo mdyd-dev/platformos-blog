@@ -1,18 +1,19 @@
 ---
 slug: 'dashboard/blog'
 format: html
-layout: 'modules/dashboard/dashboard'
-authorization_policies:
-  - 'modules/blog/instance_blog_edition'
-  - 'modules/dashboard/dashboard_access'
+layout: 'modules/blog/admin'
 ---
-{% include "modules/blog/blog/admin/commons" %}
 {% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
   assign pagination_per_page = context.params.per_page | default: 15 | plus: 0
   assign pagination_page = context.params.page | default: 1 | plus: 0
 %}
+{% content_for 'meta_title' %}{{ 'modules/blog/admin.posts' | t }}{% endcontent_for %}
 
-{% render 'modules/blog/layouts/blog/flash_messages', context: context %}
 {%- function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null -%}
 
 {%- function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: pagination_per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: context.params.tags, slug: null, published_at_lte: null, published_at_lt: null, published_at_gt: null, except_ids: null -%}

@@ -1,10 +1,11 @@
 ---
 id: TASK-1
 title: Consolidate into a single `blog` module on records + pos-module-user
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - claude
 created_date: '2026-06-03 15:28'
-updated_date: '2026-06-09 08:59'
+updated_date: '2026-07-20 14:22'
 labels:
   - platformos
   - blog
@@ -38,18 +39,18 @@ This parent tracks the initiative. Work is split across subtasks sequenced by de
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Exactly one blog module exists (modules/blog); the dashboard_blog, dashboard, signup, and utils modules are removed
-- [ ] #2 All blog data is stored and queried as records; no customizations / Custom Model Types remain
-- [ ] #3 Authentication (sign-up, log-in, log-out, password reset, edit profile) is provided via pos-module-user
-- [ ] #4 Authorization uses a blog.manage permission via pos-module-user; admin pages are gated by it and a minimal managers screen can grant/revoke it; an initial manager is seeded
-- [ ] #5 Google Analytics and generic dashboard settings are removed; only blog_instance settings remain
-- [ ] #6 Module manifest depends on pos-module-core, pos-module-user, and pos-module-common-styling; pos-utils is gone
-- [ ] #7 Existing blog content (instance settings + posts + images) is preserved via data migration and renders correctly
-- [ ] #8 platformos-check passes with 0 errors across the module
+- [x] #1 Exactly one blog module exists (modules/blog); the dashboard_blog, dashboard, signup, and utils modules are removed
+- [x] #2 All blog data is stored and queried as records; no customizations / Custom Model Types remain
+- [x] #3 Authentication (sign-up, log-in, log-out, password reset, edit profile) is provided via pos-module-user
+- [x] #4 Authorization uses a blog.manage permission via pos-module-user; admin pages are gated by it and a minimal managers screen can grant/revoke it; an initial manager is seeded
+- [x] #5 Google Analytics and generic dashboard settings are removed; only blog_instance settings remain
+- [x] #6 Module manifest depends on pos-module-core, pos-module-user, and pos-module-common-styling; pos-utils is gone
+- [x] #7 Existing blog content (instance settings + posts + images) is preserved via data migration and renders correctly
+- [x] #8 platformos-check passes with 0 errors across the module
 - [ ] #9 All subtasks are completed, each merged as its own reviewable PR
 - [ ] #10 The existing TestCafe e2e suite (npm run test-ci) passes against the consolidated module, with page objects/tests updated for changed routes and markup; the Jenkins pipeline (deploy → test) is green
-- [ ] #11 New business logic added during the consolidation (commands) is covered by pos-module-tests unit tests
-- [ ] #12 The post editor uses pos-module-common-styling's markdown editor (replacing the vendored Trumbowyg WYSIWYG) and its image-upload component (bound to upload properties); the legacy custom_image upload and the Trumbowyg assets are fully removed
+- [x] #11 New business logic added during the consolidation (commands) is covered by pos-module-tests unit tests
+- [x] #12 The post editor uses pos-module-common-styling's markdown editor (replacing the vendored Trumbowyg WYSIWYG) and its image-upload component (bound to upload properties); the legacy custom_image upload and the Trumbowyg assets are fully removed
 <!-- AC:END -->
 
 ## Implementation Notes
@@ -102,4 +103,19 @@ TOOLING:
 KNOWN PRE-EXISTING BUG (unowned, pending user decision): /blog/category/<tag> 404s — category.liquid slug is static 'blog/category' while _post links tags as /blog/category/<tag>. Same static-slug class 1.3 fixed for the post page; needs a dynamic slug (blog/category/:tags).
 
 CATEGORY ROUTING FIX (2026-06-09): the pre-existing /blog/category/<tag> 404 is RESOLVED. category.liquid slug is now the optional-segment dynamic pattern `blog/category(/:tags)` (platformOS supports `(/:param)` optional segments), reading context.params.tags instead of extract_url_params. Both /blog/category (bare → all posts) and /blog/category/<tag> (filtered) now return 200; verified the tagged page shows the 'Category:' label + matching post, a non-matching tag shows 'no content', no runtime errors. Side benefits: removed the `<%= &blog_path =%>` url_template from category (cleared its LiquidHTMLSyntaxError) and switched the index presentation partial from bare `current_user` to `context.current_user` (clears a PartialCallArguments the linter raises once the include resolves — globals accessed via `context.` are not treated as required params; useful pattern for 1.6's index-page url_template removal). platformos-check now 79 errors (was 80; −32 vs the 111 baseline). NOTE: pages/blog/index.liquid (slug '/') still uses the url_template + extract_url_params and still carries that one LiquidHTMLSyntaxError + a masked current_user include-check — 1.6 can give it the same treatment if the index page is reworked.
+
+CONSOLIDATION COMPLETE (2026-07-20) — all 8 subtasks are Done (1.4/1.5/1.6/1.8 closed today; see their final summaries). End state verified on dev + tests instances:
+- modules/ contains only blog, core, user, common-styling, tests. dashboard_blog/dashboard/signup/utils and ALL form_configurations are gone (deploys removed remote artifacts).
+- pos-cli check run: 0 errors / 8 warnings (was 111 errors at task open). The 8 warnings are documented one-shot-migration N+1s and 2 UnusedAssign linter false-positives.
+- Auth = pos-module-user built-in pages (/sessions/new, /users/new, /passwords/reset) + blog /log-out + /edit-profile; profile backfill migration keeps existing accounts working.
+- Authorization = blog.manage via blog_manager role (app override of role_permissions), can_do_or_unauthorized gates, /dashboard/managers grant/revoke screen, idempotent first-manager seed.
+- Records only: blog_post/blog_instance schema tables; the last `customizations:` alias residue in blog_posts/search.graphql + its query objects was renamed to `records:` today; the customizations API remains ONLY inside the one-shot legacy-data migration helpers (they read the legacy store by design).
+- E2E: Playwright suite (home/auth/posts/admin/managers, 17 tests) passes against the tests instance; unit suites blog_posts/blog_instances/auth/managers pass on-instance.
+- Jenkinsfile updated: node:20, Playwright image, MPKIT_URL env, `npm run test-ci` script restored (playwright test), report artifacts; E2E_TEST_PASSWORD credential is optional (authenticated suites skip without it).
+
+REMAINING — the two unchecked ACs need a user decision, not code:
+- AC#9: all subtasks are completed, but NOT 'each merged as its own PR' — work was committed directly to modernize-blog in batches (flagged as pending user direction since 1.1). Waive or rewrite the AC to match reality.
+- AC#10: the Playwright suite passes locally against the tests instance and the pipeline definition is updated, but an actual Jenkins run (deploy → test green) cannot be verified from this environment; also note the Jenkinsfile's staging URL (blog-module.staging...) is a different instance that will need the dashboard-profile cleanup mutation before its first deploy of this code (see task 1.8 deployment note).
+
+DEPLOYMENT NOTE for any other instance (incl. production): before deploying, run `mutation { user_profiles_delete_all(user_profile_type_name: "modules/dashboard/dashboard") { count } }` — the platform refuses to delete the dashboard instance_profile_type while profiles of that type exist.
 <!-- SECTION:NOTES:END -->

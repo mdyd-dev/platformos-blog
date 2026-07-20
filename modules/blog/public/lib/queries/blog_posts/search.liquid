@@ -20,5 +20,5 @@
   assign per_page = per_page | to_positive_integer: 20
   assign page = page | to_positive_integer: 1
   graphql res = 'modules/blog/blog_posts/search', per_page: per_page, page: page, slug: slug, published_at_lte: published_at_lte, published_at_lt: published_at_lt, published_at_gt: published_at_gt, tags: tags, blog_instance_id: blog_instance_id, except_ids: except_ids
-  return res.customizations
+  return res.records
 %}

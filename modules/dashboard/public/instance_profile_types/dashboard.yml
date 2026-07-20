@@ -1,8 +1,0 @@
----
-name: dashboard
-properties:
-- name: admin
-  type: boolean
-- name: password_token
-  type: string
----

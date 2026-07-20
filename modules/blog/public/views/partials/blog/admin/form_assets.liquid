@@ -1,9 +1,0 @@
-{% comment %}
-  Loads the pos-module-common-styling assets (CSS + JS) required by the markdown
-  editor and image-upload components used in the dashboard post / settings forms.
-  Injected into the dashboard layout head via content_for. `reset: false` keeps
-  the dashboard's Bootstrap styling intact.
-{% endcomment %}
-{% content_for 'head_content' %}
-  {% render 'modules/common-styling/init', reset: false %}
-{% endcontent_for %}

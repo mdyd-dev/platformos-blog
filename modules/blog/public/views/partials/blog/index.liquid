@@ -78,10 +78,9 @@
 
   {% liquid
     function profile = 'modules/user/helpers/current_profile'
-    assign owner_id = blog_instance.user.id | plus: 0
-    assign viewer_id = profile.user.id | plus: 0
+    function can_manage = 'modules/user/helpers/can_do', requester: profile, do: 'blog.manage', entity: null, access_callback: null
   %}
-  {%- if profile.user and viewer_id == owner_id -%}
+  {%- if can_manage -%}
     {%- liquid
       assign blog_settings_label = 'modules/blog/blog.blog_settings' | t
       render 'modules/blog/blog/flying-button', btn_text: blog_settings_label, btn_href: '/dashboard/blog/settings', btn_icon: 'cog'
