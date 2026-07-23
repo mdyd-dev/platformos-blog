@@ -13,6 +13,8 @@
 .pos-user-content {
   width: 100%;
   max-width: 350px;
+  margin-inline: auto;
+  padding-block-start: var(--pos-gap-section-section);
 }
 
 

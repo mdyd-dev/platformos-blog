@@ -5,6 +5,16 @@
   create_from_remote pattern: value_upload { type: image, acl: public,
   remote_url }).
 
+  The direct-upload widget's S3 POST success response returns its <Location>
+  with path separators percent-encoded (%2F) for this bucket. platformOS's
+  remote_url fetch does not decode before extracting a filename, so passing
+  that encoded URL straight through makes it treat the whole encoded path as
+  one opaque filename and nest it under the new upload's directory (a doubled
+  property_uploads/.../property_uploads/... path that 404s). Decoding here
+  fixes it for every caller (post hero_image/author_avatar, blog_instance
+  header_image) and is a no-op for already-clean URLs (e.g. asset_url'd
+  bundled images used by seed migrations).
+
   Arguments:
     name - upload property name (e.g. 'hero_image')
     url  - remote image URL
@@ -14,10 +24,11 @@
 {% liquid
   assign result = nil
   if url != blank
+    assign decoded_url = url | url_decode
     assign upload_value = '{}' | parse_json
     assign upload_value = upload_value | hash_add_key: 'type', 'image'
     assign upload_value = upload_value | hash_add_key: 'acl', 'public'
-    assign upload_value = upload_value | hash_add_key: 'remote_url', url
+    assign upload_value = upload_value | hash_add_key: 'remote_url', decoded_url
     assign result = '{}' | parse_json | hash_add_key: 'name', name
     assign result = result | hash_add_key: 'value_upload', upload_value
   endif

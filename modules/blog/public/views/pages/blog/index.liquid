@@ -20,8 +20,8 @@ layout: 'modules/blog/blog'
   function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: true
   assign blog_posts = null
   if blog_instance
-    assign today = 'now' | date: '%F'
-    function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: null
+    assign now_iso = 'now' | date: '%Y-%m-%dT%H:%M:%S.%LZ'
+    function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags, slug: null, published_at_lte: now_iso, published_at_lt: null, published_at_gt: null, except_ids: null
   endif
 %}
 {% include 'modules/blog/blog/index',

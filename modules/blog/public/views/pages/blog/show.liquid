@@ -13,8 +13,8 @@ layout: 'modules/blog/blog'
 {% if blog_slug != blank and post_slug != blank and blog_instance %}
 
   {% liquid
-    assign today = 'now' | date: '%F'
-    function posts = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_instance.id, tags: null, slug: post_slug, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: null
+    assign now_iso = 'now' | date: '%Y-%m-%dT%H:%M:%S.%LZ'
+    function posts = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_instance.id, tags: null, slug: post_slug, published_at_lte: now_iso, published_at_lt: null, published_at_gt: null, except_ids: null
     assign blog_post = posts.results.first
   %}
 
@@ -22,11 +22,11 @@ layout: 'modules/blog/blog'
     {% liquid
       function prev_collection = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: null, published_at_lt: blog_post.published_at, published_at_gt: null, except_ids: null
       assign previous_post = prev_collection.results.first
-      function next_collection = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: blog_post.published_at, except_ids: null
+      function next_collection = 'modules/blog/queries/blog_posts/search', per_page: null, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: now_iso, published_at_lt: null, published_at_gt: blog_post.published_at, except_ids: null
       assign next_post = next_collection.results.last
       assign posts_required_size = 3
-      function related_collection = 'modules/blog/queries/blog_posts/search', per_page: posts_required_size, page: null, blog_instance_id: blog_post.blog_instance_id, tags: blog_post.tags, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: blog_post.id
-      function other_collection = 'modules/blog/queries/blog_posts/search', per_page: posts_required_size, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: today, published_at_lt: null, published_at_gt: null, except_ids: blog_post.id
+      function related_collection = 'modules/blog/queries/blog_posts/search', per_page: posts_required_size, page: null, blog_instance_id: blog_post.blog_instance_id, tags: blog_post.tags, slug: null, published_at_lte: now_iso, published_at_lt: null, published_at_gt: null, except_ids: blog_post.id
+      function other_collection = 'modules/blog/queries/blog_posts/search', per_page: posts_required_size, page: null, blog_instance_id: blog_post.blog_instance_id, tags: null, slug: null, published_at_lte: now_iso, published_at_lt: null, published_at_gt: null, except_ids: blog_post.id
       assign related_posts = related_collection.results | concat: other_collection.results | uniq | limit: posts_required_size
       assign word_count = blog_post.content | strip_html | split: ' ' | size
       assign read_minutes = word_count | divided_by: 180 | plus: 1
