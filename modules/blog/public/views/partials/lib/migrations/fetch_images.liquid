@@ -1,0 +1,28 @@
+{% comment %}
+  Fetches legacy custom_image attachment URLs for all rows of a table via the
+  (deprecated) customizations query, paginating 100 at a time. Used by the
+  legacy data migration; the records API cannot read custom_image attachments.
+
+  Arguments:
+    table - table (customization) name, e.g. 'modules/dashboard_blog/blog_post'
+
+  Returns: hash of row id => { hero_image: { url }, author_avatar: { url },
+           header_image: { url }, header_logo: { url }, header_icon: { url } }
+{% endcomment %}
+{% liquid
+  assign images = '{}' | parse_json
+  assign current_page = 1
+  assign total_pages = 1
+  for i in (1..100)
+    if current_page > total_pages
+      break
+    endif
+    graphql g = 'modules/blog/migrations/source_images', name: table, page: current_page
+    assign total_pages = g.customizations.total_pages
+    for row in g.customizations.results
+      assign images = images | hash_add_key: row.id, row
+    endfor
+    assign current_page = current_page | plus: 1
+  endfor
+%}
+{% return images %}

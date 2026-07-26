@@ -1,4 +1,0 @@
-name: google_analytics
-properties:
-- name: tracking_id
-  type: string

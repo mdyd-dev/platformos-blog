@@ -1,0 +1,16 @@
+{% comment %}
+  Presentation partial: Facebook comments. Rendered only when the blog has a
+  Facebook app id configured — the SDK is loaded here, not in the layout.
+
+  Locals:
+    page_url        - canonical URL of the post
+    facebook_app_id - the blog_instance facebook_app_id
+{% endcomment %}
+{% if facebook_app_id != blank %}
+  <div class="blog-comments pos-mt-section-section">
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous"
+      src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v19.0&appId={{ facebook_app_id }}"></script>
+    <div class="fb-comments" data-href="{{ page_url }}" data-width="100%" data-numposts="5"></div>
+  </div>
+{% endif %}

@@ -1,0 +1,10 @@
+mutation presign($property_name: String!) {
+  presigned: property_upload_presigned_url(
+    model_schema_name: "modules/blog/blog_instance"
+    property_name: $property_name
+    include_content_type: true
+  ) {
+    upload_url
+    upload_url_payload
+  }
+}

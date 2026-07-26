@@ -1,0 +1,5 @@
+mutation record_create($table: String!, $properties: [PropertyInputType!]!) {
+  record: record_create(record: { table: $table, properties: $properties }) {
+    id
+  }
+}

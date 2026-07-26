@@ -1,0 +1,107 @@
+{% doc %}
+  Plain-form editor for the blog_instance settings. No {% form %} / form_configuration:
+  a regular <form> with the CSRF token and the common-styling image-upload component
+  for the header image.
+
+  @param {object} object - the blog_instance record (or submitted values on re-render)
+  @param {object} errors - validation errors keyed by field name
+  @param {string} action - the form action URL
+  @param {object} presigned_header - presigned upload for the header_image property
+{% enddoc %}
+{% liquid
+  assign tags_filter_value = object.tags_filter | join: ', '
+
+  assign header_files = '[]' | parse_json
+  if object.header_image.url != blank
+    assign header_file = '{}' | parse_json | hash_add_key: 'url', object.header_image.url
+    assign header_entry = '{}' | parse_json | hash_add_key: 'id', object.id | hash_add_key: 'file', header_file
+    assign header_files = header_files | array_add: header_entry
+  endif
+%}
+
+<form action="{{ action }}" method="post" class="pt-5 with-borders" data-tc="blog-settings-form">
+  <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+  <input type="hidden" name="_method" value="put">
+  <input type="hidden" name="blog_instance[scope]" value="blog">
+  <input type="hidden" name="blog_instance[slug]" value="blog">
+
+  <div class="col-lg-8 col-md-12 col-sm-12 col-12">
+    <div class="form-group pb-3">
+      <label class="switch">
+        <input type="checkbox" name="blog_instance[enabled]" value="1"{% if object.enabled != false %} checked{% endif %} data-tc="blog-settings-enabled">
+        {{ 'modules/blog/admin.blog_enabled' | t }}
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label for="blog-settings-title">{{ 'modules/blog/admin.title' | t }}</label>
+      <input type="text" class="form-control" id="blog-settings-title" name="blog_instance[title]" value="{{ object.title }}" data-tc="blog-settings-title"{% render 'modules/common-styling/forms/error_input_handler', name: 'title', errors: errors.title %}>
+      {% render 'modules/common-styling/forms/error_list', name: 'title', errors: errors.title %}
+    </div>
+
+    <div class="form-group">
+      <label for="blog-settings-subtitle">{{ 'modules/blog/admin.subtitle' | t }}</label>
+      <input type="text" class="form-control" id="blog-settings-subtitle" name="blog_instance[subtitle]" value="{{ object.subtitle }}" data-tc="blog-settings-subtitle">
+    </div>
+
+    <div class="form-group">
+      <label class="switch">
+        <input type="checkbox" name="blog_instance[sidebar_enabled]" value="1"{% if object.sidebar_enabled %} checked{% endif %} data-tc="blog-settings-sidebar-enabled">
+        {{ 'modules/blog/admin.sidebar_enabled' | t }}
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label class="switch">
+        <input type="checkbox" name="blog_instance[grid_view_enabled]" value="1"{% if object.grid_view_enabled %} checked{% endif %} data-tc="blog-settings-grid-view-enabled">
+        {{ 'modules/blog/admin.grid_view_enabled' | t }}
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label for="blog-settings-tags-filter">{{ 'modules/blog/admin.tags_filter' | t }}</label>
+      <input type="text" class="form-control" id="blog-settings-tags-filter" name="blog_instance[tags_filter]" value="{{ tags_filter_value }}" placeholder="{{ 'modules/blog/admin.tags_placeholder' | t }}" data-tc="blog-settings-tags-filter">
+    </div>
+
+    <div class="form-group">
+      <label for="blog-settings-facebook-app-id">{{ 'modules/blog/admin.facebook_app_id' | t }}</label>
+      <input type="text" class="form-control" id="blog-settings-facebook-app-id" name="blog_instance[facebook_app_id]" value="{{ object.facebook_app_id }}" data-tc="blog-settings-facebook-app-id">
+    </div>
+
+    <div class="form-group">
+      <label>{{ 'modules/blog/admin.header_image' | t }}</label>
+      {% render 'modules/common-styling/forms/upload',
+        id: 'blog-settings-header-image',
+        name: 'blog_instance[header_image]',
+        presigned_upload: presigned_header,
+        files: header_files,
+        image_editor_enabled: false,
+        allowed_file_types: null,
+        max_number_of_files: 1,
+        aspect_ratio: null
+      %}
+    </div>
+
+    <div class="form-group">
+      <label for="blog-settings-facebook-link">{{ 'modules/blog/admin.facebook_link' | t }}</label>
+      <input type="text" class="form-control" id="blog-settings-facebook-link" name="blog_instance[facebook_link]" value="{{ object.facebook_link }}" data-tc="blog-settings-facebook-link">
+    </div>
+
+    <div class="form-group">
+      <label for="blog-settings-twitter-link">{{ 'modules/blog/admin.twitter_link' | t }}</label>
+      <input type="text" class="form-control" id="blog-settings-twitter-link" name="blog_instance[twitter_link]" value="{{ object.twitter_link }}" data-tc="blog-settings-twitter-link">
+    </div>
+
+    <div class="form-group">
+      <label for="blog-settings-linkedin-link">{{ 'modules/blog/admin.linkedin_link' | t }}</label>
+      <input type="text" class="form-control" id="blog-settings-linkedin-link" name="blog_instance[linkedin_link]" value="{{ object.linkedin_link }}" data-tc="blog-settings-linkedin-link">
+    </div>
+
+    <div class="form-group">
+      <label for="blog-settings-instagram-link">{{ 'modules/blog/admin.instagram_link' | t }}</label>
+      <input type="text" class="form-control" id="blog-settings-instagram-link" name="blog_instance[instagram_link]" value="{{ object.instagram_link }}" data-tc="blog-settings-instagram-link">
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg" data-tc="blog-settings-submit">{{ 'modules/blog/admin.save' | t }}</button>
+  </div>
+</form>

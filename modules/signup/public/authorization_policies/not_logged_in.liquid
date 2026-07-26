@@ -1,7 +1,0 @@
----
-name: not_logged_in
-redirect_to: "/"
-flash_alert: 'You are already logged in.'
----
-{%- graphql g = 'modules/signup/current_user' %}
-{% if g.current_user.id == blank %}true{% endif %}

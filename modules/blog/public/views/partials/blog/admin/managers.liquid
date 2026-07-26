@@ -1,0 +1,54 @@
+{% doc %}
+  Managers screen table: lists user profiles and lets a blog manager grant or
+  revoke the blog_manager role (plain forms + CSRF into the grant/revoke pages).
+
+  @param {object} context - The request context (CSRF token, current user)
+  @param {object} profiles - modules/user profiles collection (results + pagination)
+  @param {string} current_user_id - The signed-in user's id (self-revoke is blocked)
+{% enddoc %}
+<section class="o-section blog-admin">
+  <div class="o-container">
+    <table class="table table-borderless pb-5">
+      <tr class="u-text-left">
+        <th>{{ 'modules/blog/admin.manager_name' | t }}</th>
+        <th>{{ 'modules/blog/admin.manager_email' | t }}</th>
+        <th>{{ 'modules/blog/admin.manager_role' | t }}</th>
+        <th>{{ 'modules/blog/admin.actions' | t }}</th>
+      </tr>
+      {% for profile in profiles.results %}
+        <tr data-tc="manager-row" data-user-id="{{ profile.user_id }}">
+          <td data-tc="manager-name">{{ profile.name }}</td>
+          <td data-tc="manager-email">{{ profile.email }}</td>
+          <td>
+            {% if profile.roles contains 'blog_manager' %}
+              <span class="pos-tag" data-tc="manager-badge">{{ 'modules/blog/admin.manager_badge' | t }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if profile.roles contains 'blog_manager' %}
+              {% if profile.user_id != current_user_id %}
+                <form action="/dashboard/managers/revoke" method="post" class="d-inline" data-tc="manager-revoke-form">
+                  <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                  <input type="hidden" name="user_id" value="{{ profile.user_id }}">
+                  <button type="submit" class="btn btn-link" data-tc="manager-revoke">{{ 'modules/blog/admin.revoke_manager' | t }}</button>
+                </form>
+              {% endif %}
+            {% else %}
+              <form action="/dashboard/managers/grant" method="post" class="d-inline" data-tc="manager-grant-form">
+                <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                <input type="hidden" name="user_id" value="{{ profile.user_id }}">
+                <button type="submit" class="btn btn-link" data-tc="manager-grant">{{ 'modules/blog/admin.grant_manager' | t }}</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    {% if profiles.total_pages > 1 %}
+      <div class="mt-5">
+        {% render 'modules/common-styling/pagination', total_pages: profiles.total_pages %}
+      </div>
+    {% endif %}
+  </div>
+</section>

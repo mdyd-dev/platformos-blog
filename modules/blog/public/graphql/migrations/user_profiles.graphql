@@ -1,0 +1,8 @@
+query user_profiles_for_backfill {
+  records(per_page: 2000, filter: { table: { value: "modules/user/profile" } }) {
+    results {
+      id
+      user_id: property(name: "user_id")
+    }
+  }
+}

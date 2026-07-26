@@ -1,18 +1,30 @@
 {
   "name": "platformos-blog",
-  "version": "1.0.0",
-  "description": "PlatformOS Blog module will help you kick start simple blog page. Currently project consist of multiple modules that could be used separately or can be easily importeded to other projects. It can be installed on any production or staging instance via Partner Portal [here](https://portal.apps.near-me.com/marketplace/pos_modules/new?id=19).",
+  "version": "2.0.0",
+  "description": "platformOS Blog module — a single module for running a blog on platformOS, built on pos-module-core, pos-module-user and pos-module-common-styling.",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test-ci": "testcafe 'chromium:headless --no-sandbox' --screenshots-on-fails --screenshots=screenshots tests/e2e --skip-js-errors"
+    "test": "playwright test",
+    "test-ci": "playwright test",
+    "test:home": "playwright test --project=home",
+    "test:auth": "playwright test --project=auth",
+    "test:posts": "playwright test --project=posts",
+    "test:admin": "playwright test --project=admin",
+    "test:managers": "playwright test --project=managers",
+    "deploy:dev": "pos-cli deploy dev",
+    "check": "pos-cli check run"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.15.29"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lemingos/platformos-blog.git"
   },
-  "author": "",
+  "author": "platformOS",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/lemingos/platformos-blog/issues"

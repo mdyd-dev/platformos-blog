@@ -1,0 +1,16 @@
+{% doc %}
+  Query object: find a single blog_post record by id via the records API.
+
+  Wraps graphql/blog_posts/search.graphql (filtering on id) so the edit page can
+  load the post to pre-fill the form without calling {% graphql %} directly.
+
+  @param {string} id - blog_post record id
+  @returns {object} the matching blog_post record, or nil
+{% enddoc %}
+{% liquid
+  if id == blank
+    return nil
+  endif
+  graphql res = 'modules/blog/blog_posts/search', id: id, per_page: 1, page: 1
+  return res.records.results.first
+%}

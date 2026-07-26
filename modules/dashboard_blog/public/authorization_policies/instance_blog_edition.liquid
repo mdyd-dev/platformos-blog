@@ -1,8 +1,0 @@
----
-name: instance_blog_edition
-redirect_to: 'blog'
-flash_alert: 'Please log in to access this page.'
----
-{% graphql g = "modules/dashboard_blog/get_blog_user" %}
-{% if g.current_user != blank %}true{% endif %}
-

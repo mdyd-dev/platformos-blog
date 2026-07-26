@@ -1,0 +1,55 @@
+---
+slug: 'dashboard/blog'
+format: html
+layout: 'modules/blog/admin'
+---
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
+  assign pagination_per_page = context.params.per_page | default: 15 | plus: 0
+  assign pagination_page = context.params.page | default: 1 | plus: 0
+%}
+{% content_for 'meta_title' %}{{ 'modules/blog/admin.posts' | t }}{% endcontent_for %}
+
+{%- function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null -%}
+
+{%- function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: pagination_per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: context.params.tags, slug: null, published_at_lte: null, published_at_lt: null, published_at_gt: null, except_ids: null -%}
+
+<a class="btn btn-info float-right" href="/">{{ 'modules/blog/admin.back_to_blog' | t }}</a>
+{%- render 'modules/blog/blog/admin/navigation' -%}
+<section class="o-section blog-admin">
+  <div class="o-container">
+    <table class="table table-borderless pb-5">
+      <tr class="u-text-left">
+        <th>{{ 'modules/blog/admin.title' | t }}</th>
+        <th>{{ 'modules/blog/admin.author' | t }}</th>
+        <th>{{ 'modules/blog/admin.published_at' | t }}</th>
+        <th>{{ 'modules/blog/admin.actions' | t }}</th>
+      </tr>
+      {% for blog_post in blog_posts.results %}
+        <tr data-tc="blog-post-row">
+          <td><a href="/blog/post/{{ blog_instance.slug }}/{{ blog_post.slug }}" data-tc="blog-post-title-link">{{ blog_post.title }}</a></td>
+          <td>{{ blog_post.author_name }}</td>
+          <td>{{ blog_post.published_at | localize: 'long' }}</td>
+          <td>
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <a href="/dashboard/posts/edit/{{ blog_post.id }}" class='btn btn-link' data-tc="blog-post-edit">{{ 'modules/blog/admin.edit' | t }}</a>
+              <form action="/dashboard/posts/{{ blog_post.id }}" method="post" class="d-inline" onsubmit="return confirm('{{ 'modules/blog/admin.delete_post_confirm' | t }}');" data-tc="blog-post-delete-form">
+                <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit" class="btn btn-link" data-tc="blog-post-delete">{{ 'modules/blog/admin.delete' | t }}</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <div class="mt-5">
+      {% render 'modules/common-styling/pagination', total_pages: blog_posts.total_pages %}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,57 @@
+{% comment %}
+  Builds the PropertyInputType array for creating a modules/blog/blog_instance
+  record from a legacy customization row.
+
+  Arguments:
+    source_properties - properties hash of the source row
+    source_images     - legacy custom_image urls for the row
+                        ({ header_image: { url }, ... }), may be nil
+    slug              - resolved slug for the new record (idempotency key)
+
+  Returns: array of PropertyInputType hashes
+{% endcomment %}
+{% liquid
+  assign result = '[]' | parse_json
+
+  assign string_names = 'title,subtitle,scope,facebook_app_id,facebook_link,twitter_link,instagram_link,linkedin_link' | split: ','
+  for name in string_names
+    assign value = source_properties[name]
+    if value != nil
+      assign item = '{}' | parse_json | hash_add_key: 'name', name | hash_add_key: 'value', value
+      assign result = result | array_add: item
+    endif
+  endfor
+
+  assign item = '{}' | parse_json | hash_add_key: 'name', 'slug' | hash_add_key: 'value', slug
+  assign result = result | array_add: item
+
+  assign boolean_names = 'enabled,sidebar_enabled,grid_view_enabled' | split: ','
+  for name in boolean_names
+    assign value = source_properties[name]
+    if value == true or value == 'true'
+      assign item = '{}' | parse_json | hash_add_key: 'name', name | hash_add_key: 'value_boolean', true
+      assign result = result | array_add: item
+    elsif value == false or value == 'false'
+      assign item = '{}' | parse_json | hash_add_key: 'name', name | hash_add_key: 'value_boolean', false
+      assign result = result | array_add: item
+    endif
+  endfor
+
+  function tags_filter = 'modules/blog/lib/migrations/cast_to_array', value: source_properties.tags_filter
+  if tags_filter != nil
+    assign item = '{}' | parse_json | hash_add_key: 'name', 'tags_filter' | hash_add_key: 'value_array', tags_filter
+    assign result = result | array_add: item
+  endif
+
+  assign upload_names = 'header_image,header_logo,header_icon' | split: ','
+  for name in upload_names
+    assign url = source_images[name].url
+    if url != blank and source_properties[name] == blank
+      function item = 'modules/blog/lib/migrations/upload_property', name: name, url: url
+      if item != nil
+        assign result = result | array_add: item
+      endif
+    endif
+  endfor
+%}
+{% return result %}

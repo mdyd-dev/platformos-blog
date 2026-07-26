@@ -1,0 +1,87 @@
+{% doc %}
+  Build stage for blog_post create/update.
+
+  Takes the raw form params and produces a normalized object that:
+  - exposes the scalar fields (used by `check` and for re-rendering the form),
+  - carries a `properties` array (PropertyInputType) used by the record mutation.
+
+  Behaviour preserved from the legacy form:
+  - slug is always derived from the title (there is no slug input),
+  - tags are accepted as a comma-separated string and stored as an array,
+  - the "Publish Now" toggle sets published_at to today,
+  - hero_image / author_avatar are taken from the common-styling upload widget
+    (a freshly uploaded file wins, otherwise the currently attached one is kept)
+    and written as upload properties via a remote_url.
+
+  @param {object} object - raw form params for a blog post
+  @returns {object} normalized object with a `properties` array
+{% enddoc %}
+{% liquid
+  function blog = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null
+  assign blog_instance_id = object.blog_instance_id | default: blog.id
+
+  assign slug = object.title | default: '' | slugify
+
+  function tags = 'modules/blog/lib/migrations/cast_to_array', value: object.tags
+  unless tags
+    assign tags = '[]' | parse_json
+  endunless
+
+  if object.publish_now != blank
+    assign published_at = 'now' | date: '%Y-%m-%d'
+  else
+    assign published_at = object.published_at
+  endif
+
+  assign hero_image_added = object.hero_image.added.first
+  assign hero_image_url = hero_image_added | default: object.hero_image.current.first
+  assign author_avatar_added = object.author_avatar.added.first
+  assign author_avatar_url = author_avatar_added | default: object.author_avatar.current.first
+
+  # data: scalar fields for check + re-render
+  assign data = '{}' | parse_json
+  assign data = data | hash_add_key: 'id', object.id
+  assign data = data | hash_add_key: 'title', object.title
+  assign data = data | hash_add_key: 'content', object.content
+  assign data = data | hash_add_key: 'slug', slug
+  assign data = data | hash_add_key: 'excerpt', object.excerpt
+  assign data = data | hash_add_key: 'author_name', object.author_name
+  assign data = data | hash_add_key: 'author_biography', object.author_biography
+  assign data = data | hash_add_key: 'published_at', published_at
+  assign data = data | hash_add_key: 'blog_instance_id', blog_instance_id
+  assign data = data | hash_add_key: 'tags', tags
+  assign data = data | hash_add_key: 'hero_image', hero_image_url
+  assign data = data | hash_add_key: 'author_avatar', author_avatar_url
+
+  # properties: PropertyInputType array for the record mutation
+  assign properties = '[]' | parse_json
+  assign string_names = 'title,content,excerpt,slug,author_name,author_biography,blog_instance_id,published_at' | split: ','
+  for name in string_names
+    assign value = data[name]
+    if value != nil
+      assign item = '{}' | parse_json | hash_add_key: 'name', name | hash_add_key: 'value', value
+      assign properties = properties | array_add: item
+    endif
+  endfor
+
+  assign item = '{}' | parse_json | hash_add_key: 'name', 'tags' | hash_add_key: 'value_array', tags
+  assign properties = properties | array_add: item
+
+  # only write an upload property when a NEW file was uploaded, otherwise the
+  # existing attachment is left untouched
+  if hero_image_added != blank
+    function item = 'modules/blog/lib/migrations/upload_property', name: 'hero_image', url: hero_image_added
+    if item != nil
+      assign properties = properties | array_add: item
+    endif
+  endif
+  if author_avatar_added != blank
+    function item = 'modules/blog/lib/migrations/upload_property', name: 'author_avatar', url: author_avatar_added
+    if item != nil
+      assign properties = properties | array_add: item
+    endif
+  endif
+
+  assign data = data | hash_add_key: 'properties', properties
+  return data
+%}

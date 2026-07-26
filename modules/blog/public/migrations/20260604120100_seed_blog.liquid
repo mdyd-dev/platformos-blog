@@ -1,0 +1,335 @@
+{% comment %}
+  First-run seed (replaces the old customization-based init partial).
+  Creates the default blog_instance and a set of sample posts via
+  record_create, with images set through the upload properties and the post
+  bodies authored as markdown (common-styling editor format).
+  Posts get relative published_at dates so a fresh install always looks
+  recently active.
+  Guard: only seeds when no blog_instance record exists yet, so it is a no-op
+  on instances that carry migrated production data.
+{% endcomment %}
+{% liquid
+  assign log_type = 'modules/blog/seed_blog'
+  graphql existing = 'modules/blog/migrations/source_records', table: 'modules/blog/blog_instance', page: 1
+%}
+{% if existing.records.total_entries > 0 %}
+  {% log 'Blog already initialized, skipping seed', type: log_type %}
+{% else %}
+  {% comment %}
+    No header_image seeded on purpose — without one the hero renders the
+    platformOS brand gradient; admins can upload their own in Blog Settings.
+  {% endcomment %}
+  {% parse_json instance_properties %}
+  [
+    { "name": "title", "value": "PlatformOS Blog" },
+    { "name": "subtitle", "value": "Stories, guides and product updates from the platformOS team." },
+    { "name": "enabled", "value_boolean": true },
+    { "name": "slug", "value": "blog" },
+    { "name": "scope", "value": "blog" },
+    { "name": "sidebar_enabled", "value_boolean": false },
+    { "name": "tags_filter", "value_array": ["getting started", "design", "writing", "platformos"] },
+    { "name": "grid_view_enabled", "value_boolean": true }
+  ]
+  {% endparse_json %}
+  {% graphql gi = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_instance', properties: instance_properties %}
+  {% if gi.errors %}
+    {% log gi, type: log_type %}
+  {% endif %}
+
+  {% comment %}
+    Post hero/author images are fetched by remote_url when the value_upload
+    properties below are saved. On a fresh deploy this migration can run
+    before the module's own assets are actually live on the CDN, so
+    record_create would 404. Defer post creation to a background job so its
+    automatic retries (max_attempts) absorb that race instead of crashing
+    the migration.
+  {% endcomment %}
+  {% background delay: 0.1, max_attempts: 5, source_name: 'modules/blog/seed_blog_posts', blog_instance_id: gi.record.id %}
+  {% assign log_type = 'modules/blog/seed_blog' %}
+  {% assign now_epoch = 'now' | date: '%s' | plus: 0 %}
+
+  {% comment %} ------------------------------------------------ post 1 {% endcomment %}
+  {% capture post_content %}
+In this short introduction, we will guide you through some basic blog features so that you can kickstart your blog in a matter of minutes. As an administrator of your blog, follow the steps below to set up your blog and start creating content.
+
+# Create an administrator account
+
+To start working on your blog, you should set up an administrator account and delete the default administrator account to secure it:
+
+1. Go to *http://[your-page-url]/sign-up* and create a new user. Once done, you are redirected to the */log-in* page with the message: "Your account has been successfully created. Please log in."
+1. As your new account does not have access to the Dashboard yet, first log in as the auto-generated administrative account with the email "**admin@example.com**" and password "**admin1234**". You are now on the Dashboard, where you should see a list of all registered users.
+1. Click on Edit next to the user you've created, and select the Admin checkbox. Click on the Save button to save your changes.
+1. Log in as the user you created, and remove the default admin user in order to secure your blog.
+
+# Set up the blog
+
+Follow these steps to set up some basic information for your blog, like its title, layout, and social sharing settings:
+
+1. Go to the Dashboard, and click on the Blog link in the left navigation.
+1. You can see three links at the top of the page, click on Blog Settings.
+1. Adjust your blog's default settings: the title and subtitle displayed in the hero, the tags available for categorizing posts, the hero image, and your social media links shown in the footer.
+
+# Create your first post
+
+Follow these steps to create your first post:
+
+1. Click the New Post link on the top of the Blog section.
+1. Fill in the form. Make sure you select Publish Now, otherwise your post will not be visible to the public.
+1. Click on Save.
+
+You have created your first post. You can now delete or unpublish the sample posts that shipped with the module so that they are no longer displayed on your blog.
+
+**Congratulations, you have now set up your platformOS Blog.**
+  {% endcapture %}
+  {% assign hero_image_url = 'modules/blog/images/first_post_image.jpg' | asset_url | split: '?' | first %}
+  {% assign author_avatar_url = 'modules/blog/images/thumb_pOS.jpg' | asset_url | split: '?' | first %}
+  {% assign published_at = now_epoch | minus: 86400 | date: '%FT%T.000Z' %}
+  {% parse_json post_properties %}
+  [
+    { "name": "slug", "value": "getting-started-with-the-platformos-blog-module" },
+    { "name": "title", "value": "Getting Started with the platformOS Blog Module" },
+    { "name": "tags", "value_array": ["getting started"] },
+    { "name": "content", "value": {{ post_content | strip | json }} },
+    { "name": "excerpt", "value": "Thank you for installing the platformOS Blog Module. In this sample blog post, you will learn how to set up your blog and how to create new content." },
+    { "name": "author_name", "value": "platformOS Team" },
+    { "name": "author_biography", "value": "Creators of the platformOS Blog Module" },
+    { "name": "published_at", "value": {{ published_at | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
+    { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } },
+    { "name": "author_avatar", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ author_avatar_url | json }} } }
+  ]
+  {% endparse_json %}
+  {% graphql gp = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_post', properties: post_properties %}
+  {% if gp.errors %}
+    {% log gp, type: log_type %}
+  {% endif %}
+
+  {% comment %} ------------------------------------------------ post 2 {% endcomment %}
+  {% capture post_content %}
+The public blog you are looking at is built with the [platformOS design system](https://documentation.platformos.com) — the `common-styling` module. Every color, font, spacing and component on this page comes from a shared set of design tokens, which means your blog stays consistent with the rest of your platformOS application out of the box.
+
+# One design system, light and dark
+
+The design system defines its palette as CSS custom properties with light and dark variants. The blog enables automatic theme switching, so if your operating system prefers a dark color scheme, this page is already rendering in dark mode — no configuration required.
+
+# Components, not snowflakes
+
+The building blocks you see around this text are reusable components:
+
+- **Cards** display the posts on the home page, the author box and the previous/next navigation.
+- **Tags** power the category filter and the topic labels on every post.
+- **Buttons** in the header and the pagination all share the same sizing and states.
+- **Typography** for this very article is handled by the prose styles, tuned for comfortable reading.
+
+# Make it yours
+
+Because everything is driven by design tokens, rebranding the blog usually means overriding a handful of CSS custom properties — an accent color here, a heading font there — instead of rewriting stylesheets. Head over to the style guide page of the design system to see every component and token in one place.
+  {% endcapture %}
+  {% assign hero_image_url = 'modules/blog/images/posts/post_design.jpg' | asset_url | split: '?' | first %}
+  {% assign published_at = now_epoch | minus: 691200 | date: '%FT%T.000Z' %}
+  {% parse_json post_properties %}
+  [
+    { "name": "slug", "value": "designing-your-blog-with-the-platformos-design-system" },
+    { "name": "title", "value": "Designing Your Blog with the platformOS Design System" },
+    { "name": "tags", "value_array": ["design", "platformos"] },
+    { "name": "content", "value": {{ post_content | strip | json }} },
+    { "name": "excerpt", "value": "Cards, tags, buttons and typography on this blog all come from the common-styling design system — including automatic dark mode. Here is how it fits together." },
+    { "name": "author_name", "value": "platformOS Design Team" },
+    { "name": "author_biography", "value": "The people behind the common-styling design system" },
+    { "name": "published_at", "value": {{ published_at | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
+    { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } }
+  ]
+  {% endparse_json %}
+  {% graphql gp = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_post', properties: post_properties %}
+  {% if gp.errors %}
+    {% log gp, type: log_type %}
+  {% endif %}
+
+  {% comment %} ------------------------------------------------ post 3 {% endcomment %}
+  {% capture post_content %}
+Every post on this blog is written in Markdown — a lightweight formatting syntax that keeps you focused on the words instead of the markup. This sample post doubles as a quick reference.
+
+# The essentials
+
+Headings start with `#`, emphasis uses asterisks, and lists are just dashes or numbers:
+
+- *italic* text uses one asterisk
+- **bold** text uses two
+- [links](https://www.platformos.com) are square brackets followed by parentheses
+
+# Quotes and code
+
+Blockquotes work the way you would expect:
+
+> Good writing is rewriting. Publish, read it again, improve it.
+
+Inline `code` uses backticks, and fenced blocks get syntax highlighting automatically:
+
+```liquid
+{% raw %}{% liquid
+  function posts = 'modules/blog/queries/blog_posts/search', per_page: 10
+  assign featured = posts.results.first
+%}{% endraw %}
+```
+
+# Images and more
+
+Images use the link syntax with a leading exclamation mark. When you add an image through the post editor, it is uploaded to the platformOS CDN and the Markdown is generated for you.
+
+That is genuinely all you need to publish well-formatted articles. Open this post in the admin editor to see the source side by side with the result.
+  {% endcapture %}
+  {% assign hero_image_url = 'modules/blog/images/posts/post_markdown.jpg' | asset_url | split: '?' | first %}
+  {% assign published_at = now_epoch | minus: 1382400 | date: '%FT%T.000Z' %}
+  {% parse_json post_properties %}
+  [
+    { "name": "slug", "value": "writing-beautiful-posts-in-markdown" },
+    { "name": "title", "value": "Writing Beautiful Posts in Markdown" },
+    { "name": "tags", "value_array": ["writing", "getting started"] },
+    { "name": "content", "value": {{ post_content | strip | json }} },
+    { "name": "excerpt", "value": "Headings, lists, quotes and syntax-highlighted code blocks — a two-minute tour of everything you can do in the post editor." },
+    { "name": "author_name", "value": "platformOS Docs Team" },
+    { "name": "author_biography", "value": "We write the words so you can write yours" },
+    { "name": "published_at", "value": {{ published_at | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
+    { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } }
+  ]
+  {% endparse_json %}
+  {% graphql gp = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_post', properties: post_properties %}
+  {% if gp.errors %}
+    {% log gp, type: log_type %}
+  {% endif %}
+
+  {% comment %} ------------------------------------------------ post 4 {% endcomment %}
+  {% capture post_content %}
+As your blog grows, tags keep it navigable. This post explains how tags work on the platformOS Blog and how to use them well.
+
+# How tags work
+
+Each post can carry any number of tags. The tags you configure in **Blog Settings → Tags filter** appear as the category chips on the home page, and every tag on a post links to a filtered listing of related articles.
+
+# A few guidelines
+
+1. **Keep the list short.** Five to eight tags cover most blogs; more than that and readers stop using them.
+1. **Prefer topics over types.** "design" and "tutorials" age better than "misc" or "news".
+1. **Be consistent.** Pick a casing and stick to it — tags are matched exactly.
+1. **Revisit occasionally.** If a tag has only one post after months of writing, fold it into a broader one.
+
+# Categories on the home page
+
+The chips at the top of the post list come straight from your settings, so the navigation always reflects the topics you actually write about. Readers can jump between categories without leaving the page flow, and the RSS feed keeps working across all of them.
+  {% endcapture %}
+  {% assign hero_image_url = 'modules/blog/images/posts/post_tags.jpg' | asset_url | split: '?' | first %}
+  {% assign published_at = now_epoch | minus: 2332800 | date: '%FT%T.000Z' %}
+  {% parse_json post_properties %}
+  [
+    { "name": "slug", "value": "organizing-content-with-tags-and-categories" },
+    { "name": "title", "value": "Organizing Content with Tags and Categories" },
+    { "name": "tags", "value_array": ["writing"] },
+    { "name": "content", "value": {{ post_content | strip | json }} },
+    { "name": "excerpt", "value": "Tags power the category navigation on your home page. A short guide to keeping them useful as your archive grows." },
+    { "name": "author_name", "value": "platformOS Docs Team" },
+    { "name": "author_biography", "value": "We write the words so you can write yours" },
+    { "name": "published_at", "value": {{ published_at | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
+    { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } }
+  ]
+  {% endparse_json %}
+  {% graphql gp = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_post', properties: post_properties %}
+  {% if gp.errors %}
+    {% log gp, type: log_type %}
+  {% endif %}
+
+  {% comment %} ------------------------------------------------ post 5 {% endcomment %}
+  {% capture post_content %}
+The Blog Settings page in the Dashboard is small on purpose — a handful of options that shape the whole site. Here is what each one does.
+
+# Identity
+
+- **Title and subtitle** render in the hero on the home page and set the browser title. Keep the subtitle to one sentence; it doubles as your blog's elevator pitch.
+- **Hero image** sits behind the title. Wide, calm images work best — the layout adds a dark overlay so white text stays readable on anything.
+
+# Content
+
+- **Tags filter** defines the categories offered on the home page and in the post editor.
+- **Posts** are managed on their own pages — writing, editing and scheduling all happen in the post form, where you can also upload a hero image per post.
+
+# Reach
+
+- **Social media links** (Facebook, X, Instagram, LinkedIn) show up as icons in the footer.
+- **Facebook app id** enables the comments block under every post. Leave it empty and the blog simply skips comments.
+- The **RSS feed** at `/blog/rss.xml` is always on, so readers can subscribe from day one.
+
+Change a setting, refresh the home page, and you will see the effect immediately — there is no separate publish step for configuration.
+  {% endcapture %}
+  {% assign hero_image_url = 'modules/blog/images/posts/post_settings.jpg' | asset_url | split: '?' | first %}
+  {% assign published_at = now_epoch | minus: 3542400 | date: '%FT%T.000Z' %}
+  {% parse_json post_properties %}
+  [
+    { "name": "slug", "value": "a-tour-of-your-blog-settings" },
+    { "name": "title", "value": "A Tour of Your Blog Settings" },
+    { "name": "tags", "value_array": ["getting started", "platformos"] },
+    { "name": "content", "value": {{ post_content | strip | json }} },
+    { "name": "excerpt", "value": "Title, hero image, categories, social links — a quick walkthrough of every option on the Blog Settings page and what it changes." },
+    { "name": "author_name", "value": "platformOS Engineering" },
+    { "name": "author_biography", "value": "Building the platform under your platform" },
+    { "name": "published_at", "value": {{ published_at | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
+    { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } }
+  ]
+  {% endparse_json %}
+  {% graphql gp = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_post', properties: post_properties %}
+  {% if gp.errors %}
+    {% log gp, type: log_type %}
+  {% endif %}
+
+  {% comment %} ------------------------------------------------ post 6 {% endcomment %}
+  {% capture post_content %}
+Your blog ships production-ready. Before you announce it, run through this short checklist to make the most of what is already built in.
+
+# Before you hit publish
+
+1. **Replace the sample content.** Unpublish or delete these starter posts once you have a few of your own.
+1. **Set your title and subtitle.** They appear in the hero, the browser tab and search results.
+1. **Add your social links.** The footer icons and the share buttons under each post are wired up as soon as the links are set.
+
+# SEO comes standard
+
+Every post renders its title and excerpt as meta tags, slugs are clean and human-readable, and category pages have stable URLs you can link to from anywhere. Publishing dates are real `time` elements, which search engines read directly.
+
+# Give readers a way to stay
+
+The RSS feed at `/blog/rss.xml` updates automatically with every published post. Add the link wherever your audience lives — a newsletter footer, a community channel, your product's changelog page.
+
+# Measure what matters
+
+Connect Google Analytics from the Dashboard to see which topics resonate. Combined with tags, a month of data usually tells you exactly what to write next.
+
+That is the whole launch. Write the next post — that is the part only you can do.
+  {% endcapture %}
+  {% assign hero_image_url = 'modules/blog/images/posts/post_launch.jpg' | asset_url | split: '?' | first %}
+  {% assign author_avatar_url = 'modules/blog/images/thumb_pOS.jpg' | asset_url | split: '?' | first %}
+  {% assign published_at = now_epoch | minus: 5184000 | date: '%FT%T.000Z' %}
+  {% parse_json post_properties %}
+  [
+    { "name": "slug", "value": "going-live-a-launch-checklist-for-your-blog" },
+    { "name": "title", "value": "Going Live: a Launch Checklist for Your Blog" },
+    { "name": "tags", "value_array": ["getting started", "writing"] },
+    { "name": "content", "value": {{ post_content | strip | json }} },
+    { "name": "excerpt", "value": "SEO, RSS, social sharing and analytics are already wired in. A short pre-launch checklist to make sure you are using all of it." },
+    { "name": "author_name", "value": "platformOS Team" },
+    { "name": "author_biography", "value": "Creators of the platformOS Blog Module" },
+    { "name": "published_at", "value": {{ published_at | json }} },
+    { "name": "blog_instance_id", "value": {{ blog_instance_id | json }} },
+    { "name": "hero_image", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ hero_image_url | json }} } },
+    { "name": "author_avatar", "value_upload": { "type": "image", "acl": "public", "remote_url": {{ author_avatar_url | json }} } }
+  ]
+  {% endparse_json %}
+  {% graphql gp = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_post', properties: post_properties %}
+  {% if gp.errors %}
+    {% log gp, type: log_type %}
+  {% endif %}
+
+  {% log 'Seeded default blog_instance and sample posts', type: log_type %}
+  {% endbackground %}
+{% endif %}

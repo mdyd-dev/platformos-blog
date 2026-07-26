@@ -1,0 +1,10 @@
+mutation update($id: ID!, $properties: [PropertyInputType!]!) {
+  record: record_update(
+    id: $id
+    record: { table: "modules/blog/blog_instance", properties: $properties }
+  ) {
+    id
+    slug: property(name: "slug")
+    title: property(name: "title")
+  }
+}

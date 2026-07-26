@@ -1,0 +1,14 @@
+{% comment %}
+  Presentation partial: floating action button for blog owners.
+
+  Locals:
+    btn_href - target URL
+    btn_text - accessible label
+    btn_icon - common-styling icon name (e.g. 'cog', 'pencil')
+{% endcomment %}
+{% if btn_href %}
+  <a class="pos-button pos-button-primary blog-fab" href="{{ btn_href }}" title="{{ btn_text }}">
+    {% render 'modules/common-styling/icon', icon: btn_icon, class: null %}
+    <span class="pos-label">{{ btn_text }}</span>
+  </a>
+{% endif %}

@@ -1,0 +1,24 @@
+{% doc %}
+  Query object: list blog_post records via the records API.
+
+  Wraps graphql/blog_posts/search.graphql so pages fetch posts with
+  {% function ... = 'modules/blog/queries/blog_posts/search' %} and never call
+  {% graphql %} from a presentation partial. Pass null for any unused filter.
+
+  @param {number} per_page - results per page (default 20)
+  @param {number} page - page number (default 1)
+  @param {string} blog_instance_id - scope to one blog instance
+  @param {object} tags - OR-match against post tags (array of strings)
+  @param {string} slug - exact post slug
+  @param {string} published_at_lte - published_at upper bound (inclusive)
+  @param {string} published_at_lt - published_at upper bound (exclusive)
+  @param {string} published_at_gt - published_at lower bound (exclusive)
+  @param {object} except_ids - post ids to exclude (array of ids)
+  @returns {object} the records collection (results + pagination metadata)
+{% enddoc %}
+{% liquid
+  assign per_page = per_page | to_positive_integer: 20
+  assign page = page | to_positive_integer: 1
+  graphql res = 'modules/blog/blog_posts/search', per_page: per_page, page: page, slug: slug, published_at_lte: published_at_lte, published_at_lt: published_at_lt, published_at_gt: published_at_gt, tags: tags, blog_instance_id: blog_instance_id, except_ids: except_ids
+  return res.records
+%}

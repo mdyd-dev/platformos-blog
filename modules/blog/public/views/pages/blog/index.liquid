@@ -1,0 +1,33 @@
+---
+slug: /
+layout: 'modules/blog/blog'
+---
+{% liquid
+  assign url_template = ''
+  if context.params.language
+    assign url_template = '/{lang}'
+  endif
+  assign url_template = url_template | append: '/<%= &blog_path =%>blog{/category}{/tags}{?page,per_page}'
+  assign url_params = context.location.href | extract_url_params: url_template
+  assign slug = url_params.slug[1] | default: 'blog'
+  assign tags = url_params.tags | replace: '-', ' ' | default: null
+  assign pagination_page = context.params.page | default: 1 | plus: 0
+  assign per_page = context.params.per_page | default: 10 | plus: 0
+  assign feature_post_first = false
+  if pagination_page == 1
+    assign feature_post_first = true
+  endif
+  function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: true
+  assign blog_posts = null
+  if blog_instance
+    assign now_iso = 'now' | date: '%Y-%m-%dT%H:%M:%S.%LZ'
+    function blog_posts = 'modules/blog/queries/blog_posts/search', per_page: per_page, page: pagination_page, blog_instance_id: blog_instance.id, tags: tags, slug: null, published_at_lte: now_iso, published_at_lt: null, published_at_gt: null, except_ids: null
+  endif
+%}
+{% include 'modules/blog/blog/index',
+  blog_instance: blog_instance,
+  blog_posts: blog_posts,
+  slug: slug,
+  tags: tags,
+  feature_post_first: feature_post_first
+%}

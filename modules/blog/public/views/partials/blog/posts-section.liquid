@@ -1,0 +1,25 @@
+{% comment %}
+  Presentation partial: a "Related Articles" section of post cards.
+
+  Data is fetched by the owning page (pages/blog/show.liquid) and passed in:
+    related_posts  - array of blog_post records to display
+    blog_instance  - the blog_instance record (for building post URLs)
+    section_title  - optional heading
+{% endcomment %}
+{% if related_posts.size > 0 %}
+  <section class="blog-container blog-section">
+
+    {% if section_title %}
+      <header class="blog-section-header">
+        <h2 class="pos-heading-3 blog-section-title">{{ section_title }}</h2>
+      </header>
+    {% endif %}
+
+    {%- render 'modules/blog/blog/posts-list',
+      feature_first: false,
+      posts: related_posts,
+      instance_slug: blog_instance.slug
+    -%}
+
+  </section>
+{% endif %}

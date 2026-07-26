@@ -1,0 +1,36 @@
+{% comment %}
+  Presentation partial: social share links for a post.
+
+  Locals:
+    title    - optional label shown before the links
+    text     - share text (post title)
+    page_url - canonical URL of the shared page
+{% endcomment %}
+{% assign page_url_encode = page_url | url_encode %}
+
+<div class="blog-share">
+  {% if title %}
+    <span class="pos-supplementary">{{ title }}</span>
+  {% endif %}
+
+  <ul class="blog-share-list">
+    <li>
+      <a href="https://www.facebook.com/sharer.php?u={{ page_url_encode }}" target="_blank" rel="noopener" title="{{ 'modules/blog/blog.share_on_facebook' | t }}">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-facebook"></use></svg>
+        <span class="pos-label">{{ 'modules/blog/blog.share_on_facebook' | t }}</span>
+      </a>
+    </li>
+    <li>
+      <a href="https://twitter.com/share?text={{ text | url_encode }}&url={{ page_url_encode }}" target="_blank" rel="noopener" title="{{ 'modules/blog/blog.share_on_twitter' | t }}">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-twitter"></use></svg>
+        <span class="pos-label">{{ 'modules/blog/blog.share_on_twitter' | t }}</span>
+      </a>
+    </li>
+    <li>
+      <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ page_url_encode }}" target="_blank" rel="noopener" title="{{ 'modules/blog/blog.share_on_linkedin' | t }}">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-linkedin"></use></svg>
+        <span class="pos-label">{{ 'modules/blog/blog.share_on_linkedin' | t }}</span>
+      </a>
+    </li>
+  </ul>
+</div>

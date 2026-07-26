@@ -1,0 +1,10 @@
+---
+slug: log-out
+method: post
+---
+{% liquid
+  function _res = 'modules/user/commands/session/destroy'
+  function _ = 'modules/user/helpers/flash', notice: 'modules/blog/auth.logged_out', error: null, force_clear: null, info: null
+  assign return_to = context.params.return_to | default: '/'
+  redirect_to return_to
+%}

@@ -1,3 +1,0 @@
-mutation log_out {
-  session_delete_field(name: "warden.user.user.key")
-}

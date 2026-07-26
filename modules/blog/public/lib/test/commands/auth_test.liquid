@@ -1,0 +1,41 @@
+{% comment %}
+  Unit tests for the auth flows rebuilt on pos-module-user (task 1.5).
+  Covers: user create validation (blank input, invalid email, duplicate email),
+  a real sign-up through the command, and temporary-token handling for the
+  password-reset flow (invalid token yields no user).
+{% endcomment %}
+{% liquid
+  # --- user/create check rejects blank input ---
+  function invalid = 'modules/user/commands/user/create/build', first_name: null, last_name: null, email: null, password: null, hook_params: null, roles: null
+  function invalid = 'modules/user/commands/user/create/check', object: invalid
+  function contract = 'modules/tests/assertions/invalid_object', contract: contract, object: invalid, field_name: 'check_rejects_blank'
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'first_name', object: invalid.errors
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'email', object: invalid.errors
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'password', object: invalid.errors
+
+  # --- user/create check rejects a malformed email ---
+  function bad_email = 'modules/user/commands/user/create/build', first_name: 'Auth', last_name: 'Tester', email: 'not-an-email', password: 'Password123!', hook_params: null, roles: null
+  function bad_email = 'modules/user/commands/user/create/check', object: bad_email
+  function contract = 'modules/tests/assertions/invalid_object', contract: contract, object: bad_email, field_name: 'malformed_email_rejected'
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'email', object: bad_email.errors
+
+  # --- sign-up persists a user; a duplicate email is then rejected ---
+  assign suffix = 'now' | date: '%s%L'
+  assign email = 'auth-test-' | append: suffix | append: '@example.com'
+  function created = 'modules/user/commands/user/create', first_name: 'Auth', last_name: 'Tester', email: email, password: 'Password123!', hook_params: null, roles: null
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'id', object: created
+
+  function dup = 'modules/user/commands/user/create/build', first_name: 'Auth', last_name: 'Tester', email: email, password: 'Password123!', hook_params: null, roles: null
+  function dup = 'modules/user/commands/user/create/check', object: dup
+  function contract = 'modules/tests/assertions/invalid_object', contract: contract, object: dup, field_name: 'duplicate_email_rejected'
+  function contract = 'modules/tests/assertions/presence', contract: contract, field_name: 'email', object: dup.errors
+
+  # --- an invalid/expired temporary token yields no user (password reset) ---
+  function no_user = 'modules/user/helpers/user_from_temporary_token', token: 'invalid-token', email: email
+  function contract = 'modules/tests/assertions/blank', contract: contract, field_name: 'invalid_token_user', object: no_user
+
+  # --- cleanup ---
+  if created.id
+    graphql _cleanup = 'modules/blog/test/user_delete', id: created.id
+  endif
+%}

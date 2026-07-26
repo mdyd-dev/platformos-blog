@@ -1,0 +1,129 @@
+{% comment %}
+  Deterministic HTML -> Markdown converter for legacy Trumbowyg post content.
+  Handles the bounded tag set the old WYSIWYG produced: headings (h1-h6),
+  paragraphs, line breaks, ordered/unordered lists, bold, italics, links and
+  images. Presentational wrappers (span/font/div) are dropped, remaining tags
+  stripped, basic entities unescaped and whitespace collapsed. Re-running the
+  conversion on its own output is a no-op for already-converted content
+  because the migration only invokes it when content still looks like HTML.
+
+  Arguments:
+    html - HTML string
+
+  Returns: markdown string
+{% endcomment %}
+{% capture nl %}
+{% endcapture %}
+{% liquid
+  assign dnl = nl | append: nl
+  assign md = html | default: ''
+
+  # Normalize line endings and non-breaking spaces
+  assign md = md | replace_regex: '\r', ''
+  assign md = md | replace: '&nbsp;', ' '
+
+  # Drop presentational wrappers but keep their text content
+  assign md = md | replace_regex: '</?(span|font|div)[^>]*>', ''
+
+  # Drop <br> runs sitting directly before a closing block tag
+  assign md = md | replace_regex: '(<br[^>]*>\s*)+</(p|h[1-6]|li)>', '</\2>'
+
+  # Images (alt/src in either order), then links
+  assign md = md | replace_regex: '<img[^>]*alt="([^"]*)"[^>]*src="([^"]*)"[^>]*>', '![\1](\2)'
+  assign md = md | replace_regex: '<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>', '![\2](\1)'
+  assign md = md | replace_regex: '<img[^>]*src="([^"]*)"[^>]*>', '![](\1)'
+  assign md = md | replace_regex: '<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)</a>', '[\2](\1)'
+
+  # Bold and italics; drop emphasis wrappers that contain no text.
+  # \b after the tag name stops <br> matching as <b...> and <img> as <i...>.
+  assign md = md | replace_regex: '<(strong|b)\b[^>]*>(\s|<br[^>]*>)*</(strong|b)>', ''
+  assign md = md | replace_regex: '<(strong|b)\b[^>]*>([\s\S]*?)</(strong|b)>', '**\2**'
+  assign md = md | replace_regex: '<(em|i)\b[^>]*>([\s\S]*?)</(em|i)>', '*\2*'
+
+  assign md = md | replace: '****', ''
+%}
+{% liquid
+  # Ordered lists: every item becomes "1." so markdown auto-numbers
+  assign ol_marker = nl | append: '1. '
+  assign parts = md | split: '<ol'
+  if parts.size > 1
+    assign md = parts[0]
+    for part in parts
+      if forloop.first
+        continue
+      endif
+      assign segs = part | split: '</ol>'
+      assign list = segs[0] | replace_regex: '\A[^>]*>', ''
+      assign list = list | replace_regex: '<li[^>]*>\s*', ol_marker
+      assign list = list | replace_regex: '\s*</li>', ''
+      assign md = md | append: dnl | append: list | append: dnl
+      for seg in segs
+        unless forloop.first
+          assign md = md | append: seg
+          unless forloop.last
+            assign md = md | append: '</ol>'
+          endunless
+        endunless
+      endfor
+    endfor
+  endif
+
+  # Unordered lists: items become "-"
+  assign ul_marker = nl | append: '- '
+  assign parts = md | split: '<ul'
+  if parts.size > 1
+    assign md = parts[0]
+    for part in parts
+      if forloop.first
+        continue
+      endif
+      assign segs = part | split: '</ul>'
+      assign list = segs[0] | replace_regex: '\A[^>]*>', ''
+      assign list = list | replace_regex: '<li[^>]*>\s*', ul_marker
+      assign list = list | replace_regex: '\s*</li>', ''
+      assign md = md | append: dnl | append: list | append: dnl
+      for seg in segs
+        unless forloop.first
+          assign md = md | append: seg
+          unless forloop.last
+            assign md = md | append: '</ul>'
+          endunless
+        endunless
+      endfor
+    endfor
+  endif
+
+  # Stray list tags or items outside a recognized list
+  assign md = md | replace_regex: '</?(ol|ul)[^>]*>', ''
+  assign md = md | replace_regex: '<li[^>]*>\s*', ul_marker
+  assign md = md | replace: '</li>', ''
+%}
+{% liquid
+  # Headings h1-h6
+  assign hashes = ''
+  for level in (1..6)
+    assign hashes = hashes | append: '#'
+    assign pattern = '<h' | append: level | append: '[^>]*>([\s\S]*?)</h' | append: level | append: '>'
+    assign replacement = dnl | append: hashes | append: ' \1' | append: dnl
+    assign md = md | replace_regex: pattern, replacement
+  endfor
+
+  # Paragraphs and line breaks
+  assign md = md | replace_regex: '</?p[^>]*>', dnl
+  assign md = md | replace_regex: '<br[^>]*>', nl
+
+  # Strip any leftover tags, unescape basic entities
+  assign md = md | replace_regex: '<[^>]+>', ''
+  assign md = md | replace: '&amp;', '&'
+  assign md = md | replace: '&lt;', '<'
+  assign md = md | replace: '&gt;', '>'
+  assign md = md | replace: '&quot;', '"'
+  assign md = md | replace: '&#39;', "'"
+
+  # Collapse whitespace
+  assign md = md | replace_regex: '[ \t]+\n', nl
+  assign md = md | replace_regex: '\n[ \t]+', nl
+  assign md = md | replace_regex: '\n{3,}', dnl
+  assign md = md | strip
+%}
+{% return md %}

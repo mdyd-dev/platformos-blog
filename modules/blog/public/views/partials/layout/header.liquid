@@ -1,0 +1,37 @@
+{% doc %}
+  @param {object} context - The request context (CSRF token for the log-out form)
+  @param {object} profile - The current profile from 'modules/user/helpers/current_profile'
+{% enddoc %}
+{% liquid
+  function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: true
+  assign brand_title = blog_instance.title | default: 'Blog'
+  function can_manage = 'modules/user/helpers/can_do', requester: profile, do: 'blog.manage', entity: null, access_callback: null
+%}
+<header class="blog-header">
+  <div class="blog-container blog-header-inner">
+    <a class="blog-brand" href="/">
+      <img class="blog-brand-mark" src="{{ 'modules/blog/images/logo-mark.svg' | asset_url }}" alt="" width="29" height="24">
+      {{ brand_title }}
+    </a>
+
+    <nav class="blog-header-nav" aria-label="Site navigation">
+      <a class="pos-button pos-button-small" href="/blog/rss.xml" title="{{ 'modules/blog/layout.rss_feed' | t }}">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-feed"></use></svg>
+        <span class="pos-label">{{ 'modules/blog/layout.rss_feed' | t }}</span>
+      </a>
+
+      {% if profile.user %}
+        <a class="blog-header-user" href="/edit-profile" title="{{ 'modules/blog/auth.edit_profile' | t }}" data-tc="header-user">{{ profile.first_name | default: profile.user.email }}</a>
+        {% if can_manage %}
+          <a class="pos-button pos-button-small pos-button-primary" href="/dashboard/blog">{{ 'modules/blog/layout.dashboard' | t }}</a>
+        {% endif %}
+        <form action="/log-out" method="post" class="blog-header-logout" data-tc="log-out-form">
+          <input type="hidden" name="authenticity_token" value="{{ context.authenticity_token }}">
+          <button type="submit" class="pos-button pos-button-small">{{ 'modules/blog/auth.log_out' | t }}</button>
+        </form>
+      {% else %}
+        <a class="pos-button pos-button-small pos-button-primary" href="/sessions/new">{{ 'modules/blog/auth.log_in' | t }}</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>

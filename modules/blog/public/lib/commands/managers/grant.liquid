@@ -1,0 +1,36 @@
+{% doc %}
+  @param {string} user_id - The platform user id to grant blog.manage to
+{% enddoc %}
+{% liquid
+  assign object = '{}' | parse_json
+  assign object = object | hash_add_key: 'user_id', user_id
+  assign object = object | hash_add_key: 'valid', true
+
+  if user_id == blank
+    assign object.valid = false
+    assign message = 'modules/blog/admin.manager_profile_not_found' | t
+    assign object.errors = '{}' | parse_json | hash_add_key: 'user_id', message
+    return object
+  endif
+
+  function profile = 'modules/user/queries/profiles/find', user_id: user_id, id: null, uuid: null, first_name: null, last_name: null
+  if profile == null
+    assign object.valid = false
+    assign message = 'modules/blog/admin.manager_profile_not_found' | t
+    assign object.errors = '{}' | parse_json | hash_add_key: 'user_id', message
+    return object
+  endif
+
+  if profile.roles contains 'blog_manager'
+    assign object.noop = true
+    return object
+  endif
+
+  function res = 'modules/user/commands/profiles/roles/append', id: profile.id, role: 'blog_manager'
+  if res.errors != blank
+    assign object.valid = false
+    assign object.errors = res.errors
+  endif
+
+  return object
+%}

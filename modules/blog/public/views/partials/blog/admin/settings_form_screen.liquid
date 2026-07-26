@@ -1,0 +1,24 @@
+{% doc %}
+  Full dashboard screen for the blog settings editor: admin navigation + the
+  plain settings form, with the presigned upload generated for the header image.
+  Used by the settings page and by the update handler when re-rendering on a
+  validation error.
+
+  @param {object} object - the blog_instance record (or submitted values on re-render)
+  @param {object} errors - validation errors keyed by field name
+{% enddoc %}
+{% liquid
+  function presigned_header = 'modules/blog/queries/blog_instances/presigned_upload', property_name: 'header_image'
+
+  render 'modules/blog/blog/admin/navigation'
+%}
+<section class="o-section">
+  <div class="o-container">
+    {% render 'modules/blog/blog/admin/settings_form',
+      object: object,
+      errors: errors,
+      action: '/dashboard/blog/settings',
+      presigned_header: presigned_header
+    %}
+  </div>
+</section>

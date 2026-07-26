@@ -1,0 +1,49 @@
+{% comment %}
+  Extends 20260720150000_seed_blog_manager: that migration only promotes an
+  EXISTING user's profile to blog_manager, so a truly fresh install with zero
+  users stayed stuck (nobody to promote). This one creates a default
+  admin@example.com / password account (with blog_manager granted at
+  creation) when no profiles exist at all — staging only, so no known-password
+  account is ever seeded on production. Idempotent: modules/user/commands/user/create
+  itself rejects a duplicate email, and if any profile already carries
+  blog_manager or a profile already exists, this is a no-op.
+{% endcomment %}
+{% liquid
+  assign log_type = 'modules/blog/seed_blog_manager_create_admin'
+  function profiles = 'modules/user/queries/profiles/search', limit: 2000, page: 1, id: null, ids: null, uuid: null, user_id: null, first_name: null, last_name: null, not_ids: null, query: null, emails: null, sort: null
+
+  assign has_manager = false
+  assign first_profile = null
+  assign first_user_id = 0
+  for profile in profiles.results
+    if profile.roles contains 'blog_manager'
+      assign has_manager = true
+    endif
+
+    assign candidate_user_id = profile.user_id | plus: 0
+    if first_profile == null or candidate_user_id < first_user_id
+      assign first_profile = profile
+      assign first_user_id = candidate_user_id
+    endif
+  endfor
+
+  if has_manager
+    log 'a blog_manager already exists, skipping', type: log_type
+  elsif first_profile == null and context.environment == 'staging'
+    function admin = 'modules/user/commands/user/create', first_name: 'Admin', last_name: 'Admin', email: 'admin@example.com', password: 'password', hook_params: null, roles: ["blog_manager"]
+    if admin.errors != blank
+      log admin, type: 'ERROR: seed_blog_manager_create_admin'
+    else
+      log admin.id, type: 'seed_blog_manager_create_admin: created default admin with blog_manager'
+    endif
+  elsif first_profile == null
+    log 'no profiles found and not on staging, skipping default admin creation', type: log_type
+  else
+    function res = 'modules/user/commands/profiles/roles/append', id: first_profile.id, role: 'blog_manager'
+    if res.errors != blank
+      log res, type: 'ERROR: seed_blog_manager_create_admin'
+    else
+      log first_profile.user_id, type: 'seed_blog_manager_create_admin: granted blog_manager to user'
+    endif
+  endif
+%}

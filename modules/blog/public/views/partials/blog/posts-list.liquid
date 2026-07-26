@@ -1,0 +1,23 @@
+{% comment %}
+  Presentation partial: responsive grid of post cards.
+
+  Locals:
+    posts         - array of blog_post records
+    instance_slug - blog instance slug (for post URLs)
+    feature_first - boolean; renders the first post as a large featured card
+{% endcomment %}
+<div class="blog-posts-grid">
+  {% for post in posts %}
+    {% liquid
+      assign featured_flag = false
+      if feature_first and forloop.first
+        assign featured_flag = true
+      endif
+    %}
+    {%- render 'modules/blog/blog/post',
+      post_item: post,
+      featured: featured_flag,
+      slug: instance_slug
+    -%}
+  {% endfor %}
+</div>

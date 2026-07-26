@@ -1,0 +1,16 @@
+---
+slug: 'dashboard/posts/:id'
+method: delete
+format: html
+---
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
+  function object = 'modules/blog/commands/blog_posts/delete', id: context.params.id
+  # platformos-check-disable DeprecatedTag
+  include 'modules/core/helpers/redirect_to', url: '/dashboard/blog', notice: 'Post has been successfully deleted', default: null, error: null, format: null, info: null, object: null
+  # platformos-check-enable DeprecatedTag
+%}

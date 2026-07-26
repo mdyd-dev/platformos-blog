@@ -1,0 +1,44 @@
+{% liquid
+  function blog_instance = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: true
+  assign footer_title = blog_instance.title | default: 'Blog'
+  assign current_year = 'now' | date: '%Y'
+%}
+<footer class="blog-footer">
+  <div class="blog-container blog-footer-inner">
+    <div>
+      © {{ current_year }} {{ footer_title }} — {{ 'modules/blog/layout.powered_by' | t }}
+      <a href="https://www.platformos.com" target="_blank" rel="noopener">platformOS</a>
+    </div>
+
+    <ul class="blog-footer-social">
+      {% if blog_instance.facebook_link != blank %}
+        <li><a href="{{ blog_instance.facebook_link }}" target="_blank" rel="noopener" title="Facebook">
+          <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-facebook"></use></svg>
+          <span class="pos-label">Facebook</span>
+        </a></li>
+      {% endif %}
+      {% if blog_instance.twitter_link != blank %}
+        <li><a href="{{ blog_instance.twitter_link }}" target="_blank" rel="noopener" title="Twitter / X">
+          <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-twitter"></use></svg>
+          <span class="pos-label">Twitter / X</span>
+        </a></li>
+      {% endif %}
+      {% if blog_instance.instagram_link != blank %}
+        <li><a href="{{ blog_instance.instagram_link }}" target="_blank" rel="noopener" title="Instagram">
+          <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-instagram"></use></svg>
+          <span class="pos-label">Instagram</span>
+        </a></li>
+      {% endif %}
+      {% if blog_instance.linkedin_link != blank %}
+        <li><a href="{{ blog_instance.linkedin_link }}" target="_blank" rel="noopener" title="LinkedIn">
+          <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-linkedin"></use></svg>
+          <span class="pos-label">LinkedIn</span>
+        </a></li>
+      {% endif %}
+      <li><a href="/blog/rss.xml" title="{{ 'modules/blog/layout.rss_feed' | t }}">
+        <svg class="pos-icon" aria-hidden="true"><use xlink:href="#blog-icon-feed"></use></svg>
+        <span class="pos-label">{{ 'modules/blog/layout.rss_feed' | t }}</span>
+      </a></li>
+    </ul>
+  </div>
+</footer>

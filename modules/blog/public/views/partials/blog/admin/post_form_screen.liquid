@@ -1,0 +1,26 @@
+{% doc %}
+  Full dashboard screen for the post editor: admin navigation + the plain post
+  form, with the presigned uploads generated for the upload components. Used by
+  the new/edit pages and by the create/update handlers when re-rendering on a
+  validation error.
+
+  @param {object} object - the post record (edit) or submitted values (re-render)
+  @param {object} errors - validation errors keyed by field name
+  @param {string} action - the form action URL
+  @param {string} http_method - 'post' (create) or 'put' (edit)
+  @param {string} submit_label - the submit button label
+{% enddoc %}
+{% liquid
+  function presigned_hero = 'modules/blog/queries/blog_posts/presigned_upload', property_name: 'hero_image'
+  function presigned_avatar = 'modules/blog/queries/blog_posts/presigned_upload', property_name: 'author_avatar'
+  render 'modules/blog/blog/admin/navigation'
+%}
+{% render 'modules/blog/blog/admin/post_form',
+  object: object,
+  errors: errors,
+  action: action,
+  http_method: http_method,
+  submit_label: submit_label,
+  presigned_hero: presigned_hero,
+  presigned_avatar: presigned_avatar
+%}

@@ -1,0 +1,5 @@
+{
+  "header_path": "modules/blog/layout/header",
+  "footer_path": "modules/blog/layout/footer",
+  "blog_path": "/"
+}

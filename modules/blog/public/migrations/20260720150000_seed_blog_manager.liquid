@@ -1,0 +1,37 @@
+{% comment %}
+  Seeds the initial blog manager (replaces the dashboard module's
+  create_first_admin / promote_users_to_admins). Idempotent: if any profile
+  already carries the blog_manager role, it does nothing; otherwise it grants
+  the role to the profile of the lowest user id, so a fresh install is usable.
+{% endcomment %}
+{% liquid
+  function profiles = 'modules/user/queries/profiles/search', limit: 2000, page: 1, id: null, ids: null, uuid: null, user_id: null, first_name: null, last_name: null, not_ids: null, query: null, emails: null, sort: null
+
+  assign has_manager = false
+  assign first_profile = null
+  assign first_user_id = 0
+  for profile in profiles.results
+    if profile.roles contains 'blog_manager'
+      assign has_manager = true
+    endif
+
+    assign candidate_user_id = profile.user_id | plus: 0
+    if first_profile == null or candidate_user_id < first_user_id
+      assign first_profile = profile
+      assign first_user_id = candidate_user_id
+    endif
+  endfor
+
+  if has_manager
+    log 'a blog_manager already exists, skipping', type: 'seed_blog_manager'
+  elsif first_profile
+    function res = 'modules/user/commands/profiles/roles/append', id: first_profile.id, role: 'blog_manager'
+    if res.errors != blank
+      log res, type: 'ERROR: seed_blog_manager'
+    else
+      log first_profile.user_id, type: 'seed_blog_manager: granted blog_manager to user'
+    endif
+  else
+    log 'no profiles found, nothing to seed', type: 'seed_blog_manager'
+  endif
+%}

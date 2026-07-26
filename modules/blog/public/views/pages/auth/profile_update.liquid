@@ -1,0 +1,29 @@
+---
+slug: edit-profile
+method: post
+layout: modules/blog/blog
+---
+{% content_for 'meta_title' %}{{ 'modules/blog/auth.edit_profile' | t }}{% endcontent_for %}
+{% liquid
+  function profile = 'modules/user/helpers/current_profile'
+  if profile.user == null
+    session return_to = '/edit-profile'
+    redirect_to '/sessions/new'
+    break
+  endif
+
+  assign object = '{}' | parse_json
+  assign object = object | hash_add_key: 'first_name', context.params.first_name
+  assign object = object | hash_add_key: 'last_name', context.params.last_name
+
+  function res = 'modules/user/commands/profiles/update', object: object, profile: profile
+
+  if res.valid
+    function _ = 'modules/user/helpers/flash', notice: 'modules/blog/auth.profile_updated', error: null, force_clear: null, info: null
+    redirect_to '/edit-profile'
+  else
+    assign values = context.params
+    assign values = values | hash_add_key: 'email', profile.user.email
+    render 'modules/blog/auth/profile_form', context: context, values: values, errors: res.errors
+  endif
+%}

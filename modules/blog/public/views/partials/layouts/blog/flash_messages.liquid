@@ -1,0 +1,50 @@
+{% doc %}
+  @param {object} context - The request context (context.flash + session sflash)
+{% enddoc %}
+{% liquid
+  function sflash = 'modules/core/commands/session/get', key: 'sflash', clear: false
+  if context.location.pathname != sflash.from or sflash.force_clear or sflash.now
+    function _ = 'modules/core/commands/session/clear', key: 'sflash'
+  endif
+
+  comment
+    sflash is written in two shapes: {message, severity} by the pos-module-user
+    flash helper, {error, notice, info} by pos-module-core's flash/publish
+    (used by the core redirect_to helper). Normalize both for the toasts component.
+  endcomment
+  assign toast_message = sflash.message
+  assign toast_severity = sflash.severity
+  if toast_message == blank
+    if sflash.error != blank
+      assign toast_message = sflash.error
+      assign toast_severity = 'error'
+    elsif sflash.notice != blank
+      assign toast_message = sflash.notice
+      assign toast_severity = 'success'
+    elsif sflash.info != blank
+      assign toast_message = sflash.info
+      assign toast_severity = 'info'
+    endif
+  endif
+%}
+{% assign flash_types = 'notice|success|info|alert|warning|error' | split: '|' %}
+{% for flash_type in flash_types %}
+  {% if context.flash[flash_type] != blank %}
+    {% liquid
+      case flash_type
+      when 'alert', 'error'
+        assign severity = 'error'
+      when 'notice', 'success'
+        assign severity = 'success'
+      when 'warning'
+        assign severity = 'warning'
+      else
+        assign severity = 'info'
+      endcase
+    %}
+    <div data-flash-message="true">
+      {% render 'modules/common-styling/content/alert', type: severity, content: context.flash[flash_type] %}
+    </div>
+  {% endif %}
+{% endfor %}
+{% render 'modules/common-styling/toasts', message: toast_message, severity: toast_severity, autohide: null, delay: null %}

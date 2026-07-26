@@ -1,0 +1,32 @@
+{%- liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+-%}
+<!DOCTYPE html>
+<html lang="en" class="pos-app pos-theme-darkEnabled">
+<head>
+  {%- render 'modules/blog/layouts/blog/csrf', form_authenticity_token: context.authenticity_token %}
+  {%- render 'modules/blog/layouts/blog/meta-tags' %}
+  {%- render 'modules/blog/layouts/blog/prefetch' %}
+  {%- render 'modules/blog/layouts/blog/favicon' %}
+  {%- render 'modules/blog/layouts/blog/stylesheets' -%}
+  {%- include 'modules/blog/layouts/blog/page-title' -%}
+  {%- include 'modules/blog/layouts/blog/page-description' -%}
+
+  {% yield 'head_content' %}
+</head>
+
+<body>
+  {% render 'modules/blog/layout/header', context: context, profile: current_profile %}
+  {% render 'modules/blog/layouts/blog/icons' %}
+
+  <div class="blog-flash">
+    {% render 'modules/blog/layouts/blog/flash_messages', context: context %}
+  </div>
+
+  <main>
+    {{ content_for_layout }}
+  </main>
+
+  {%- render 'modules/blog/layout/footer' -%}
+</body>
+</html>

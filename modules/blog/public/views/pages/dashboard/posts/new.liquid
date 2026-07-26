@@ -1,0 +1,15 @@
+---
+slug: 'dashboard/posts/new'
+format: html
+layout: 'modules/blog/admin'
+---
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
+  assign object = '{}' | parse_json
+  assign submit_label = 'modules/blog/admin.create_post' | t
+  render 'modules/blog/blog/admin/post_form_screen', object: object, errors: nil, action: '/dashboard/posts', http_method: 'post', submit_label: submit_label
+%}

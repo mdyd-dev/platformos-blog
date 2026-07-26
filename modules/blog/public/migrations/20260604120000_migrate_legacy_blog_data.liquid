@@ -1,0 +1,198 @@
+{% comment %}
+  One-off data migration for the records rewrite (task 1.2).
+
+  Copies legacy blog customizations (modules/dashboard_blog/blog_instance and
+  modules/dashboard_blog/blog_post — type names fixed on production rows from
+  before the module rename) into the new record tables (modules/blog/*), and
+  normalizes legacy-shaped rows already living in the new tables (rows created
+  by the old customization-based init: custom_image attachments + HTML content).
+
+  - Images: legacy custom_image attachment URLs are written into the new
+    upload properties (platformOS fetches the URL and generates versions).
+  - Content: post HTML is converted to markdown (common-styling editor format).
+  - Linkage: blog_instance_id is remapped from the old customization id to the
+    new blog_instance record id.
+
+  Idempotent: rows are matched by slug across both sources; uploads are only
+  written when the upload property is still empty; content is only converted
+  while it still looks like HTML. Logs source vs migrated counts and an
+  error-level entry when the final counts do not add up.
+{% endcomment %}
+{% liquid
+  assign log_type = 'modules/blog/migrate_legacy_blog_data'
+
+  # ---------- Phase A: blog instances ----------
+  function target_instances = 'modules/blog/lib/migrations/fetch_rows', table: 'modules/blog/blog_instance'
+  function target_instance_images = 'modules/blog/lib/migrations/fetch_images', table: 'modules/blog/blog_instance'
+  function legacy_instances = 'modules/blog/lib/migrations/fetch_rows', table: 'modules/dashboard_blog/blog_instance'
+  function legacy_instance_images = 'modules/blog/lib/migrations/fetch_images', table: 'modules/dashboard_blog/blog_instance'
+
+  assign instance_slug_to_id = '{}' | parse_json
+  assign instance_old_to_new = '{}' | parse_json
+  assign instances_created = 0
+  assign instances_normalized = 0
+
+  for row in target_instances
+    assign row_key = row.properties.slug
+    if row_key == blank
+      assign row_key = 'legacy-' | append: row.id
+    endif
+    assign instance_slug_to_id = instance_slug_to_id | hash_add_key: row_key, row.id
+    assign instance_old_to_new = instance_old_to_new | hash_add_key: row.id, row.id
+  endfor
+
+  # Normalize rows already in the new table: move custom_image attachments into upload properties
+  for row in target_instances
+    assign row_images = target_instance_images[row.id]
+    assign update_properties = '[]' | parse_json
+    assign upload_names = 'header_image,header_logo,header_icon' | split: ','
+    for name in upload_names
+      assign url = row_images[name].url
+      if url != blank and row.properties[name] == blank
+        function item = 'modules/blog/lib/migrations/upload_property', name: name, url: url
+        if item != nil
+          assign update_properties = update_properties | array_add: item
+        endif
+      endif
+    endfor
+    if update_properties.size > 0
+      graphql gu = 'modules/blog/migrations/record_update', id: row.id, table: 'modules/blog/blog_instance', properties: update_properties
+      if gu.errors
+        log gu, type: log_type
+      else
+        assign instances_normalized = instances_normalized | plus: 1
+      endif
+    endif
+  endfor
+
+  # Copy legacy dashboard_blog instances into the new table
+  for row in legacy_instances
+    assign row_key = row.properties.slug
+    if row_key == blank
+      assign row_key = 'legacy-' | append: row.id
+    endif
+    assign existing_id = instance_slug_to_id[row_key]
+    if existing_id
+      assign instance_old_to_new = instance_old_to_new | hash_add_key: row.id, existing_id
+    else
+      assign row_images = legacy_instance_images[row.id]
+      function new_properties = 'modules/blog/lib/migrations/build_instance_properties', source_properties: row.properties, source_images: row_images, slug: row_key
+      graphql gc = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_instance', properties: new_properties
+      if gc.errors
+        log gc, type: log_type
+      else
+        assign instance_slug_to_id = instance_slug_to_id | hash_add_key: row_key, gc.record.id
+        assign instance_old_to_new = instance_old_to_new | hash_add_key: row.id, gc.record.id
+        assign instances_created = instances_created | plus: 1
+      endif
+    endif
+  endfor
+
+  # ---------- Phase B: blog posts ----------
+  function target_posts = 'modules/blog/lib/migrations/fetch_rows', table: 'modules/blog/blog_post'
+  function target_post_images = 'modules/blog/lib/migrations/fetch_images', table: 'modules/blog/blog_post'
+  function legacy_posts = 'modules/blog/lib/migrations/fetch_rows', table: 'modules/dashboard_blog/blog_post'
+  function legacy_post_images = 'modules/blog/lib/migrations/fetch_images', table: 'modules/dashboard_blog/blog_post'
+
+  assign post_slug_to_id = '{}' | parse_json
+  assign posts_created = 0
+  assign posts_normalized = 0
+
+  for row in target_posts
+    assign row_key = row.properties.slug
+    if row_key == blank
+      assign row_key = 'legacy-' | append: row.id
+    endif
+    assign post_slug_to_id = post_slug_to_id | hash_add_key: row_key, row.id
+  endfor
+
+  # Normalize rows already in the new table: uploads, markdown content, instance linkage
+  for row in target_posts
+    assign row_images = target_post_images[row.id]
+    assign update_properties = '[]' | parse_json
+    assign upload_names = 'hero_image,author_avatar' | split: ','
+    for name in upload_names
+      assign url = row_images[name].url
+      if url != blank and row.properties[name] == blank
+        function item = 'modules/blog/lib/migrations/upload_property', name: name, url: url
+        if item != nil
+          assign update_properties = update_properties | array_add: item
+        endif
+      endif
+    endfor
+    function converted_content = 'modules/blog/lib/migrations/convert_content', content: row.properties.content
+    if converted_content != row.properties.content
+      assign item = '{}' | parse_json | hash_add_key: 'name', 'content' | hash_add_key: 'value', converted_content
+      assign update_properties = update_properties | array_add: item
+    endif
+    assign old_instance_id = row.properties.blog_instance_id
+    assign new_instance_id = instance_old_to_new[old_instance_id]
+    if new_instance_id != blank and new_instance_id != old_instance_id
+      assign item = '{}' | parse_json | hash_add_key: 'name', 'blog_instance_id' | hash_add_key: 'value', new_instance_id
+      assign update_properties = update_properties | array_add: item
+    endif
+    if update_properties.size > 0
+      graphql gu = 'modules/blog/migrations/record_update', id: row.id, table: 'modules/blog/blog_post', properties: update_properties
+      if gu.errors
+        log gu, type: log_type
+      else
+        assign posts_normalized = posts_normalized | plus: 1
+      endif
+    endif
+  endfor
+
+  # Copy legacy dashboard_blog posts into the new table
+  for row in legacy_posts
+    assign row_key = row.properties.slug
+    if row_key == blank
+      assign row_key = 'legacy-' | append: row.id
+    endif
+    assign existing_id = post_slug_to_id[row_key]
+    unless existing_id
+      assign row_images = legacy_post_images[row.id]
+      function converted_content = 'modules/blog/lib/migrations/convert_content', content: row.properties.content
+      assign old_instance_id = row.properties.blog_instance_id
+      assign new_instance_id = instance_old_to_new[old_instance_id] | default: old_instance_id
+      if new_instance_id == old_instance_id and instance_old_to_new[old_instance_id] == blank
+        log row, type: log_type
+      endif
+      function new_properties = 'modules/blog/lib/migrations/build_post_properties', source_properties: row.properties, source_images: row_images, slug: row_key, content: converted_content, blog_instance_id: new_instance_id
+      graphql gc = 'modules/blog/migrations/record_create', table: 'modules/blog/blog_post', properties: new_properties
+      if gc.errors
+        log gc, type: log_type
+      else
+        assign post_slug_to_id = post_slug_to_id | hash_add_key: row_key, gc.record.id
+        assign posts_created = posts_created | plus: 1
+      endif
+    endunless
+  endfor
+
+  # ---------- Counts and assertion ----------
+  graphql gi_count = 'modules/blog/migrations/source_records', table: 'modules/blog/blog_instance', page: 1
+  graphql gp_count = 'modules/blog/migrations/source_records', table: 'modules/blog/blog_post', page: 1
+
+  assign expected_instances = instance_slug_to_id | hash_keys | size
+  assign expected_posts = post_slug_to_id | hash_keys | size
+  assign actual_instances = gi_count.records.total_entries
+  assign actual_posts = gp_count.records.total_entries
+
+  assign summary = '{}' | parse_json
+  assign summary = summary | hash_add_key: 'source_dashboard_blog_instances', legacy_instances.size
+  assign summary = summary | hash_add_key: 'source_dashboard_blog_posts', legacy_posts.size
+  assign summary = summary | hash_add_key: 'source_preexisting_instances', target_instances.size
+  assign summary = summary | hash_add_key: 'source_preexisting_posts', target_posts.size
+  assign summary = summary | hash_add_key: 'instances_created', instances_created
+  assign summary = summary | hash_add_key: 'instances_normalized', instances_normalized
+  assign summary = summary | hash_add_key: 'posts_created', posts_created
+  assign summary = summary | hash_add_key: 'posts_normalized', posts_normalized
+  assign summary = summary | hash_add_key: 'expected_instances', expected_instances
+  assign summary = summary | hash_add_key: 'actual_instances', actual_instances
+  assign summary = summary | hash_add_key: 'expected_posts', expected_posts
+  assign summary = summary | hash_add_key: 'actual_posts', actual_posts
+
+  log summary, type: log_type
+  if actual_instances != expected_instances or actual_posts != expected_posts
+    log 'MIGRATION COUNT MISMATCH - migrated record counts do not match source customization counts', type: 'error'
+    log summary, type: 'error'
+  endif
+%}

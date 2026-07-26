@@ -1,0 +1,16 @@
+{% doc %}
+  Query object: find a single blog_instance record via the records API.
+
+  Wraps graphql/blog_instances/find.graphql so pages fetch the instance with
+  {% function ... = 'modules/blog/queries/blog_instances/find' %} and never call
+  {% graphql %} from a presentation partial. Pass null for any unused filter.
+
+  @param {string} scope - instance scope (e.g. 'blog')
+  @param {string} slug - instance slug
+  @param {boolean} enabled - filter on the enabled flag
+  @returns {object} the first matching blog_instance record, or nil
+{% enddoc %}
+{% liquid
+  graphql res = 'modules/blog/blog_instances/find', scope: scope, slug: slug, enabled: enabled
+  return res.records.results.first
+%}

@@ -1,0 +1,23 @@
+---
+slug: 'dashboard/blog/settings'
+method: put
+format: html
+layout: 'modules/blog/admin'
+---
+{% liquid
+  function current_profile = 'modules/user/helpers/current_profile'
+  # platformos-check-disable DeprecatedTag
+  include 'modules/user/helpers/can_do_or_unauthorized', requester: current_profile, do: 'blog.manage', entity: null, access_callback: null, forbidden_partial: 'modules/user/components/pages/403', redirect_anonymous_to_login: true, anonymous_return_to: null
+  # platformos-check-enable DeprecatedTag
+
+  function blog = 'modules/blog/queries/blog_instances/find', scope: 'blog', slug: null, enabled: null
+  assign settings_params = context.params.blog_instance | hash_add_key: 'id', blog.id
+  function object = 'modules/blog/commands/blog_instances/update', object: settings_params
+  if object.valid
+    # platformos-check-disable DeprecatedTag
+    include 'modules/core/helpers/redirect_to', url: '/dashboard/blog/settings', notice: 'Settings saved', default: null, error: null, format: null, info: null, object: null
+    # platformos-check-enable DeprecatedTag
+  else
+    render 'modules/blog/blog/admin/settings_form_screen', object: object, errors: object.errors
+  endif
+%}

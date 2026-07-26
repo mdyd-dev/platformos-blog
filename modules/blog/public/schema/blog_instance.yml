@@ -1,0 +1,51 @@
+name: blog_instance
+properties:
+  - name: title
+    type: string
+  - name: subtitle
+    type: string
+  - name: scope
+    type: string
+  - name: slug
+    type: string
+  - name: facebook_app_id
+    type: string
+  - name: facebook_link
+    type: string
+  - name: twitter_link
+    type: string
+  - name: instagram_link
+    type: string
+  - name: linkedin_link
+    type: string
+  - name: enabled
+    type: boolean
+  - name: sidebar_enabled
+    type: boolean
+  - name: grid_view_enabled
+    type: boolean
+  - name: tags_filter
+    type: array
+  - name: header_logo
+    type: upload
+    options:
+      acl: public
+  - name: header_icon
+    type: upload
+    options:
+      acl: public
+  - name: header_image
+    type: upload
+    options:
+      acl: public
+      versions:
+        - name: normal
+          resize:
+            width: 740
+            height: 300
+            fit: cover
+        - name: hero
+          resize:
+            width: 1920
+            height: 800
+            fit: cover
